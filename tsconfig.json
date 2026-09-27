@@ -6,5 +6,6 @@
         "esModuleInterop": true,
         "downlevelIteration": true,
         "resolveJsonModule": true,
+        "strict": false
     }
 }
