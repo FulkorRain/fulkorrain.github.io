@@ -9,12 +9,6 @@ function d(t) {
     return atob(t);
 }
 
-if (location.host != "fulkorrain.github.io" && location.host != "localhost:1234" && location.host != "www.mathgeniuszach.com" && location.host != "mathgeniuszach.com" && location.protocol != "file:") {
-    window.stop();
-    location.host = "www.mathgeniuszach.com";
-    location.reload();
-}
-
 // Generic code
 
 function embedVideo(link, width, height) {
@@ -360,6 +354,3 @@ window.addEventListener("keydown", (e) => {
         }
     }
 });
-
-
-e('aWYgKGxvY2F0aW9uLmhvc3QgIT0gImZ1bGtvcnJhaW4uZ2l0aHViLmlvIiAmJiBsb2NhdGlvbi5ob3N0ICE9ICJsb2NhbGhvc3Q6MTIzNCIgJiYgbG9jYXRpb24uaG9zdCAhPSAid3d3Lm1hdGhnZW5pdXN6YWNoLmNvbSIgJiYgbG9jYXRpb24uaG9zdCAhPSAibWF0aGdlbml1c3phY2guY29tIiAmJiBsb2NhdGlvbi5wcm90b2NvbCAhPSAiZmlsZToiKSB7CiAgICB3aW5kb3cuc3RvcCgpOwogICAgbG9jYXRpb24uaG9zdCA9ICJ3d3cubWF0aGdlbml1c3phY2guY29tIjsKICAgIGxvY2F0aW9uLnJlbG9hZCgpOwp9');
