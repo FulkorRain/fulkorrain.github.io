@@ -8,8 +8,8 @@ function e(x) {
 function d(t) {
     return atob(t);
 }
-// Not the real sitelock, but one particular sitelock to confuse people trying to break in
-if (location.host != "mathgeniuszach.github.io" && location.host != "localhost:1234" && location.host != "www.mathgeniuszach.com" && location.host != "mathgeniuszach.com" && location.protocol != "file:") {
+
+if (location.host != "fulkorrain.github.io" && location.host != "localhost:1234" && location.host != "www.mathgeniuszach.com" && location.host != "mathgeniuszach.com" && location.protocol != "file:") {
     window.stop();
     location.host = "www.mathgeniuszach.com";
     location.reload();
@@ -362,5 +362,4 @@ window.addEventListener("keydown", (e) => {
 });
 
 
-// The real sitelock
-e('aWYgKGxvY2F0aW9uLmhvc3QgIT0gIm1hdGhnZW5pdXN6YWNoLmdpdGh1Yi5pbyIgJiYgbG9jYXRpb24uaG9zdCAhPSAibG9jYWxob3N0OjEyMzQiICYmIGxvY2F0aW9uLmhvc3QgIT0gInd3dy5tYXRoZ2VuaXVzemFjaC5jb20iICYmIGxvY2F0aW9uLmhvc3QgIT0gIm1hdGhnZW5pdXN6YWNoLmNvbSIgJiYgbG9jYXRpb24ucHJvdG9jb2wgIT0gImZpbGU6IikgewogICAgd2luZG93LnN0b3AoKTsKICAgIGxvY2F0aW9uLmhvc3QgPSAid3d3Lm1hdGhnZW5pdXN6YWNoLmNvbSI7CiAgICBsb2NhdGlvbi5yZWxvYWQoKTsKfQ==');
+e('aWYgKGxvY2F0aW9uLmhvc3QgIT0gImZ1bGtvcnJhaW4uZ2l0aHViLmlvIiAmJiBsb2NhdGlvbi5ob3N0ICE9ICJsb2NhbGhvc3Q6MTIzNCIgJiYgbG9jYXRpb24uaG9zdCAhPSAid3d3Lm1hdGhnZW5pdXN6YWNoLmNvbSIgJiYgbG9jYXRpb24uaG9zdCAhPSAibWF0aGdlbml1c3phY2guY29tIiAmJiBsb2NhdGlvbi5wcm90b2NvbCAhPSAiZmlsZToiKSB7CiAgICB3aW5kb3cuc3RvcCgpOwogICAgbG9jYXRpb24uaG9zdCA9ICJ3d3cubWF0aGdlbml1c3phY2guY29tIjsKICAgIGxvY2F0aW9uLnJlbG9hZCgpOwp9');
