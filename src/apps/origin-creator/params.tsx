@@ -32,7 +32,7 @@ export async function fetchZip(url: string): Promise<JSZipFolder> {
     switch (proto) {
         case "github": {
             if (parts.length < 2 || parts.length > 3) throw new Error("Bad github url.");
-            newUrl = `https://api.mathgeniuszach.com/repo/${parts[0]}/${parts[1]}/${parts[2] || "main"}`;
+            newUrl = `https://gh-zip-proxy.fulkorrain3.workers.dev/repo/${parts[0]}/${parts[1]}/${parts[2] || "main"}`;
             break;
         }
         default: throw new Error(`Unknown url protocol "${proto}"`);
