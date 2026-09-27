@@ -10,7 +10,7 @@ export const ghrepo = clean(urlParams.get("r") || "");
 export const ghbranch = clean(urlParams.get("b") || "");
 export const savecount = parseInt(urlParams.get("saves")) || 5;
 
-export const ocrepo = `github://${ghuser || "BlasterM5"}/${ghrepo || "origin-creator-schemas"}/${ghbranch || "main"}`;
+export const ocrepo = `github://${ghuser || "BlasterM5"}/${ghrepo || "origin-creator-schemas"}/${ghbranch || "0vergrown-mgz"}`;
 export const flowrepo = `github://${ghuser || "mathgeniuszach"}/${ghrepo || "origins-flow-help"}/${ghbranch || "main"}`;
 
 const MAX_TRIES = 3;
