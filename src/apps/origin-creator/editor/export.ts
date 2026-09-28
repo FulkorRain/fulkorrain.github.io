@@ -37,8 +37,8 @@ function resourcePackFormat(pack_format: number): number {
         case 12: return 13;
         case 13: case 14: case 15: return 15;
         case 16: case 17: case 18: return 18;
-        case 19: case 20: case 21: case 22:
         case 41: return 32; case 48: return 34;
+        case 19: case 20: case 21: case 22:
         case 23: case 24: case 25: case 26: default: return 22; // Mojang is weird. I'm not going to bother encoding all of these.
     }
 }
@@ -55,9 +55,9 @@ function forgeVer(pack_format: number): string {
         case 12: return "[1.19.4]";
         case 13: case 14: case 15: return "[1.20.0,1.20.1]";
         case 16: case 17: case 18: return "[1.20.2]";
+        case 48: return "[1.21,1.21.1]";
         case 19: case 20: case 21: case 22:
-        case 23: case 24: case 25: case 26: return "[1.20.3,)";
-        case 48: default: return "[1.21,1.21.1}";
+        case 23: case 24: case 25: case 26: default: return "[1.20.3,)";
     }
 }
 
@@ -101,14 +101,14 @@ function fabricDepends(pack_format: number, out: any, origined: boolean) {
             out.depends.minecraft = "~1.20.2";
             if (origined) out.depends.origins = ">=1.11.0";
             break;
-        case 19: case 20: case 21: case 22:
-        case 23: case 24: case 25: case 26:
-            out.depends.minecraft = ">=1.20.3";
-            if (origined) out.depends.origins = ">=1.12.0";
-            break;
-        case 48: default:
+        case 48:
             out.depends.minecraft = ">=1.21 <=1.21.1";
             if (origined) out.depends.origins = ">=1.13.0";
+            break;
+        case 19: case 20: case 21: case 22:
+        case 23: case 24: case 25: case 26: default:
+            out.depends.minecraft = ">=1.20.3";
+            if (origined) out.depends.origins = ">=1.12.0";
             break;
     }
 }
@@ -279,7 +279,7 @@ ${origined ?
     }
 
     // Create data
-    makeData(zip.folder("data"), PROJECT.data);
+    makeData(zip.folder("data"), PROJECT.data, "", undefined, pmeta.pack_format >= 48);
 
     // Prompt user for save
     const content = await zip.generateAsync({type: "blob"});
@@ -290,7 +290,7 @@ ${origined ?
 
         // Create mcmeta
         rzip.file("pack.mcmeta", JSON.stringify({"pack": x}, (k, v) => {
-            return (k, v) => k == "pack_format" ? resourcePackFormat(v) : v
+            return k == "pack_format" ? resourcePackFormat(v) : v;
         }, 4));
 
         // Create icon
