@@ -320,7 +320,7 @@ function hasFile(data: any): boolean {
     return false;
 }
 
-function makeData(izip: JSZip, data: any, path: string = "", ext?: string) {
+function makeData(izip: JSZip, data: any, path: string = "", ext?: string, singular: boolean = false) {
     const pmeta = simplify(PROJECT.data.meta);
     const id = pmeta.id;
 
@@ -329,7 +329,7 @@ function makeData(izip: JSZip, data: any, path: string = "", ext?: string) {
         if (path == "assets/") continue;
 
         if (k.endsWith("/")) {
-            makeData(izip, v, path + k, ext || (k == "functions/" ? ".mcfunction" : ".json"));
+            makeData(izip, v, path + k, ext || (k == "functions/" ? ".mcfunction" : ".json"), singular);
         } else {
             if (!ext && path === "") continue; // Root level files do not get extracted in datapacks
 
@@ -363,7 +363,7 @@ function makeData(izip: JSZip, data: any, path: string = "", ext?: string) {
                 if (!name.includes(".") || !KNOWN_FILES.includes(name.substring(name.lastIndexOf(".")))) name += ext;
             }
 
-            izip.file(namespace + "/" + path + name, out);
+            izip.file(namespace + "/" + (singular ? singularConverter(path) : path) + name, out);
         }
     }
 }
