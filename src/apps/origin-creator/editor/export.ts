@@ -38,6 +38,7 @@ function resourcePackFormat(pack_format: number): number {
         case 13: case 14: case 15: return 15;
         case 16: case 17: case 18: return 18;
         case 19: case 20: case 21: case 22:
+        case 41: return 32; case 48: return 34;
         case 23: case 24: case 25: case 26: default: return 22; // Mojang is weird. I'm not going to bother encoding all of these.
     }
 }
@@ -289,7 +290,7 @@ ${origined ?
 
         // Create mcmeta
         rzip.file("pack.mcmeta", JSON.stringify({"pack": x}, (k, v) => {
-            return typeof k == "number" ? resourcePackFormat(v) : v;
+            return (k, v) => k == "pack_format" ? resourcePackFormat(v) : v
         }, 4));
 
         // Create icon
