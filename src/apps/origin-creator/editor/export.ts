@@ -6,6 +6,26 @@ import { simplify } from "./wrapper";
 import { KNOWN_FILES, popSave } from "..";
 import { oc } from "./api";
 
+
+const SINGULAR: {[k: string]: string} = {
+    functions: "function", predicates: "predicate", recipes: "recipe",
+    loot_tables: "loot_table", advancements: "advancement",
+    item_modifiers: "item_modifier", structures: "structure",
+}
+
+const SINGULAR_TAGS: {[k: string]: string} = {
+    blocks: "block", items: "item", entity_types: "entity_type",
+    fluids: "fluid", functions: "function", game_events: "game_event",
+}
+
+function singularConverter(path: string): string {
+    const seg = path.split("/").filter(Boolean);
+    if (!seg.length) return path;
+    seg[0] = SINGULAR[seg[0]] ?? seg[0]
+    if (seg[0] == "tags" && seg[1]) seg[1] = SINGULAR_TAGS[seg[1]] ?? seg[1];
+    return seg.join("/") + "/";
+}
+
 function resourcePackFormat(pack_format: number): number {
     switch (pack_format) {
         case 4: return 4;
