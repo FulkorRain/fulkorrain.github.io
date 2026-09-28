@@ -55,7 +55,8 @@ function forgeVer(pack_format: number): string {
         case 13: case 14: case 15: return "[1.20.0,1.20.1]";
         case 16: case 17: case 18: return "[1.20.2]";
         case 19: case 20: case 21: case 22:
-        case 23: case 24: case 25: case 26: default: return "[1.20.3,)";
+        case 23: case 24: case 25: case 26: return "[1.20.3,)";
+        case 48: default: return "[1.21,1.21.1}";
     }
 }
 
@@ -100,9 +101,13 @@ function fabricDepends(pack_format: number, out: any, origined: boolean) {
             if (origined) out.depends.origins = ">=1.11.0";
             break;
         case 19: case 20: case 21: case 22:
-        case 23: case 24: case 25: case 26: default:
+        case 23: case 24: case 25: case 26:
             out.depends.minecraft = ">=1.20.3";
             if (origined) out.depends.origins = ">=1.12.0";
+            break;
+        case 48: default:
+            out.depends.minecraft = ">=1.21 <=1.21.1";
+            if (origined) out.depends.origins = ">=1.13.0";
             break;
     }
 }
