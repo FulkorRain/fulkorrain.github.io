@@ -109,6 +109,19 @@ export async function extract(zip: JSZip, updateMetadata: boolean = true, includ
 
         // Throw out non-namespaced files
         if (names.length <= 2) continue;
+        if (names[0] == "data" && names.length > 3) {
+            const PLURAL: {[k: string]: string} = {
+            function: "functions", predicate: "predicates", recipe: "recipes",
+            loot_table: "loot_tables", advancement: "advancements",
+            item_modifier: "item_modifiers", structure: "structures",
+        };
+        const PLURAL_TAGS: {[k: string]: string} = {
+        block: "blocks", item: "items", entity_type: "entity_types",
+        fluid: "fluids", function: "functions", game_event: "game_events",
+        };
+        names[2] = PLURAL[names[2]] ?? names[2];
+        if (names[2] == "tags" && names.length > 4) names[3] = PLURAL_TAGS[names[3]] ?? names[3];
+}
 
         // Throw out assets, but only if the user wants to do so
         if (!includeAssets && names[0] == "assets") continue;

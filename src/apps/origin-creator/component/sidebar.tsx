@@ -504,6 +504,7 @@ function ResetButton(props) {
                             <MenuItem value={15}>1.20.0-1</MenuItem>
                             <MenuItem value={18}>1.20.2</MenuItem>
                             <MenuItem value={26}>1.20.3-4</MenuItem>
+                            <MenuItem value={48}>1.21-1.21.1</MenuItem>
                         </Select>
                     </FormControl>
                 </Box>
