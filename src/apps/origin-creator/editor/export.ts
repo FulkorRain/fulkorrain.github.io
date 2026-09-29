@@ -282,7 +282,7 @@ ${origined ?
     makeData(zip.folder("data"), PROJECT.data, "", undefined, pmeta.pack_format >= 48);
 
     // Prompt user for save
-    const content = await zip.generateAsync({type: "blob"});
+    const content = await zip.generateAsync({type: "blob", compression: "DEFLATE", compressionOptions: {level: 9}});
     saveAs(content, pmeta.name + " " + pmeta.version + (type == "datapack" ? ".zip" : ".jar"));
 
     if (type == "datapack" && "assets/" in PROJECT.data && hasFile(PROJECT.data["assets/"])) {
@@ -302,7 +302,7 @@ ${origined ?
         // Add assets to resourcepack
         makeData(rzip.folder("assets"), PROJECT.data["assets/"], "", ".json");
 
-        const rcontent = await rzip.generateAsync({type: "blob"});
+        const rcontent = await rzip.generateAsync({type: "blob", compression: "DEFLATE", compressionOptions: {level: 9}});
         saveAs(rcontent, pmeta.name + " " + pmeta.version + " (Resources).zip");
     }
 
