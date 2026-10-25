@@ -454,7 +454,7 @@ export const JSONED = {
                 else if (v instanceof OMap) rekey = true;
             } else if (type == "list") {
                 if (!Array.isArray(v)) set(d, k, []);
-            } else if (typeof v == "object") {
+            } else if (typeof v == "object" && type != "or") {
                 set(d, k, "");
             }
 
