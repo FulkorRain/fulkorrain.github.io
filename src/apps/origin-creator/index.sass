@@ -447,3 +447,53 @@ html[theme=dark]
 .jsprites-on
     outline: 2px solid var(--link-color, #09a)
     outline-offset: -2px
+
+.jsearch
+    position: fixed
+    z-index: 1000
+    box-sizing: border-box
+    display: flex
+    flex-direction: column
+    border: 1px solid var(--anti-color, #888)
+    border-radius: 4px
+    background-color: var(--main-color, #fff)
+    color: var(--anti-color, #000)
+    box-shadow: 0px 4px 14px #0006
+
+    &.jsearch-up
+        flex-direction: column-reverse
+
+.jsearch-input
+    width: 100%
+    margin: 0px
+    box-sizing: border-box
+
+.jsearch-list
+    overflow-y: auto
+    display: flex
+    flex-direction: column
+    padding: 2px 0px
+
+.jsearch-group
+    padding: 4px 8px 2px
+    font-size: smaller
+    opacity: 0.7
+
+.jsearch-item
+    padding: 3px 8px
+    cursor: pointer
+    font-family: monospace
+
+    &.jsearch-on
+        background-color: var(--alt-fill-color, #8883)
+
+    &.jsearch-cur
+        font-weight: 600
+
+    b
+        color: var(--link-color, #09a)
+
+.jsearch-none
+    padding: 6px 8px
+    font-size: smaller
+    opacity: 0.8
