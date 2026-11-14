@@ -1,3 +1,19 @@
+.sheading {
+    margin-top: 28px;
+    max-width: 640px;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.slist h3 {
+    margin: 16px 0 8px;
+}
+
+.sintro {
+    max-width: 640px;
+    font-size: 1rem;
+    opacity: 0.85;
+}
+
 .setting {
     display: flex;
     align-items: center;
@@ -14,19 +30,53 @@
         opacity: 0.7;
         font-size: 0.8em;
     }
+
+    &.col {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
 }
 
-.sinput {
+.sinput, .sbtn {
     color: var(--anti-color);
     background-color: var(--fill-color);
     border: 1px solid var(--border-color);
     border-radius: 2px;
     padding: 4px 10px;
     font-size: 1rem;
+}
+
+.sinput {
+    &:is(select) {
+        cursor: pointer;
+    }
+    &:is(textarea) {
+        font-family: monospace;
+        resize: vertical;
+    }
+    &:hover:is(select) {
+        background-color: var(--alt-fill-color);
+        border-color: var(--alt-border-color);
+    }
+}
+
+.sbtn {
     cursor: pointer;
 
     &:hover {
         background-color: var(--alt-fill-color);
         border-color: var(--alt-border-color);
     }
+}
+
+.sbuttons {
+    display: flex;
+    gap: 8px;
+}
+
+.smessage {
+    min-height: 1.3em;
+    font-size: 0.85em;
+    opacity: 0.85;
 }

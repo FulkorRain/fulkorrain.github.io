@@ -2,6 +2,7 @@ import { startCase } from "lodash";
 
 import { locateLink } from "../build";
 import { oc } from "../api";
+import { customSections } from "../../../../settings-store";
 import { HelperSpec, HelperItem, HelperSection, SpriteSheet } from "./types";
 
 const specs: HelperSpec[] = [];
@@ -16,6 +17,7 @@ export function helperButton(schema: any, fileId: string): string {
     const sprites = h.kind == "sprites";
     const spec: HelperSpec = {
         kind: sprites ? "sprites" : "list",
+        key: String(h.key ?? ""),
         title: String(h.title ?? "Helper"),
         list: arr(h.list),
         id: String(h.id ?? fileId.split("-")[0]),
@@ -95,6 +97,11 @@ export function helperSections(spec: HelperSpec): HelperSection[] {
     const mine: HelperItem[] = [];
     for (const f of spec.folder) mine.push(...folderItems(f));
     if (mine.length) out.unshift({ label: "From your datapack", items: Array.from(new Map(mine.map(i => [i.value, i])).values()) });
+
+    if (spec.key) {
+        const custom = customSections(spec.key).map(s => ({ label: s.label, items: s.items.map(value => ({ value })) }));
+        out.splice(mine.length ? 1 : 0, 0, ...custom);
+    }
 
     return out;
 }

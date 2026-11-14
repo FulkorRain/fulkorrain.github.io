@@ -12,6 +12,7 @@ export type SpriteSheet = {
 // Read from a schema's "helper:" key
 export type HelperSpec = {
     kind: "list" | "sprites";
+    key: string;
     title: string;
     list: string[];
     id: string;
