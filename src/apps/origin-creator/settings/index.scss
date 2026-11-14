@@ -1,0 +1,32 @@
+.setting {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    max-width: 640px;
+    background-color: var(--fill-color);
+    border: 2px solid var(--border-color);
+
+    .info small {
+        display: block;
+        opacity: 0.7;
+        font-size: 0.8em;
+    }
+}
+
+.sinput {
+    color: var(--anti-color);
+    background-color: var(--fill-color);
+    border: 1px solid var(--border-color);
+    border-radius: 2px;
+    padding: 4px 10px;
+    font-size: 1rem;
+    cursor: pointer;
+
+    &:hover {
+        background-color: var(--alt-fill-color);
+        border-color: var(--alt-border-color);
+    }
+}
