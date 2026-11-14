@@ -1039,11 +1039,12 @@ html[offline] {
 
 html[accent=blue] {
     --link-color: #09a;
+    --hover-link-color: #1ce;
     --sel-fill-color: #8ee;
     --sel-border-color: #6bb;
 }
 
-html[accent=blue] [theme=dark] {
+html[accent=blue][theme=dark] {
     --sel-fill-color: #177;
     --sel-border-color: #155;
 }
@@ -1052,5 +1053,30 @@ html[accent=blue] [theme=dark] {
     html[accent=blue]:not([theme=light]) {
         --sel-fill-color: #177;
         --sel-border-color: #155;
+    }
+}
+
+html[accent=blue] header #header-pages {
+    >div>a {
+        border-image: url("/i/blue/button.png") 12 fill;
+
+        &:hover, &:focus-within {
+            color: darkcyan;
+            border-image: url("/i/blue/button_hovered.png") 12 fill;
+        }
+        &:active {
+            border-image: url("/i/blue/button_pressed.png") 12 fill;
+        }
+    }
+
+    #home {
+        border-image: url("/i/blue/home.png") 12 fill;
+
+        &:hover {
+            border-image: url("/i/blue/home_hovered.png") 12 fill;
+        }
+        &:active {
+            border-image: url("/i/blue/home_pressed.png") 12 fill;
+        }
     }
 }
