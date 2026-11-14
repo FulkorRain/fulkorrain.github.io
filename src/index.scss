@@ -1036,3 +1036,21 @@ html[offline] {
         display: none;
     }
 }
+
+html[accent=blue] {
+    --link-color: #09a;
+    --sel-fill-color: #8ee;
+    --sel-border-color: #6bb;
+}
+
+html[accent=blue] [theme=dark] {
+    --sel-fill-color: #177;
+    --sel-border-color: #155;
+}
+
+@media (prefers-color-scheme: dark) {
+    html[accent=blue]:not([theme=light]) {
+        --sel-fill-color: #177;
+        --sel-border-color: #155;
+    }
+}
