@@ -1,6 +1,6 @@
-import { loadSettings, saveSettings, CustomSection } from "../settings-store";
+import { loadSettings, saveSettings, exportSettings, parseSettings, mergeSettings, ID_PATTERN, CustomSection, Settings } from "../settings-store";
 
-const settings = loadSettings();
+let settings: Settings = loadSettings();
 const root = document.getElementById("settings");
 
 const HELPERS: [string, string][] = [
@@ -9,8 +9,6 @@ const HELPERS: [string, string][] = [
     ["damage_types", "Damage types"],
     ["damage_tags", "Damage tags"],
 ];
-
-const ID = /^[a-z0-9_.-]+:[a-z0-9_.\-\/]+$/;
 
 function make<K extends keyof HTMLElementTagNameMap>(tag: K, cls = "", text = ""): HTMLElementTagNameMap[K] {
     const el = document.createElement(tag);
@@ -45,16 +43,18 @@ function dropdown(options: [string, string][], selected: string, onchange: (valu
 
 heading("Appearance");
 
-row(
-    "Site colours",
-    "Switch the site between the purple theme and the classic blue.",
-    dropdown([["purple", "Purple"], ["blue", "Blue (classic)"]], settings.accent, (v) => {
-        settings.accent = v;
-        saveSettings(settings);
-        if (v == "blue") document.documentElement.setAttribute("accent", "blue");
-        else document.documentElement.removeAttribute("accent");
-    })
-);
+function applyAccent(v?: string) {
+    if (v == "blue") document.documentElement.setAttribute("accent", "blue");
+    else document.documentElement.removeAttribute("accent");
+}
+
+const accentSelect = dropdown([["purple", "Purple"], ["blue", "Blue (classic)"]], settings.accent, (v) => {
+    settings.accent = v;
+    saveSettings(settings);
+    applyAccent(v);
+});
+
+row("Site colours", "Switch the site between the purple theme and the classic blue.", accentSelect);
 
 heading("Custom helper lists");
 
@@ -159,7 +159,7 @@ saveBtn.onclick = () => {
     for (const raw of itemsArea.value.split("\n")) {
         const line = raw.trim().toLowerCase();
         if (!line) continue;
-        if (!ID.test(line)) bad.push(raw.trim());
+        if (!ID_PATTERN.test(line)) bad.push(raw.trim());
         else if (!items.includes(line)) items.push(line);
     }
 
@@ -190,3 +190,68 @@ cancelBtn.onclick = () => {
 };
 
 renderList();
+
+heading("Backup");
+
+const backup = make("div", "setting col");
+const exportBtn = make("button", "sbtn", "Export settings");
+exportBtn.type = "button";
+const importMode = dropdown([["replace", "Replace my settings"], ["merge", "Merge into my settings"]], "replace", () => {});
+const importBtn = make("button", "sbtn", "Import settings");
+importBtn.type = "button";
+const fileInput = make("input");
+fileInput.type = "file";
+fileInput.accept = ".json,application/json";
+fileInput.hidden = true;
+const backupMessage = make("div", "smessage");
+
+const exportRow = make("div", "sbuttons");
+exportRow.append(exportBtn);
+const importRow = make("div", "sbuttons");
+importRow.append(importMode, importBtn, fileInput);
+backup.append(
+    make("b", "", "Save or restore everything on this page"),
+    make("small", "", "Export downloads a file you can keep as a backup or share. Import reads one back."),
+    exportRow,
+    importRow,
+    backupMessage
+);
+root.appendChild(backup);
+
+exportBtn.onclick = () => {
+    const blob = new Blob([exportSettings(settings)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = make("a");
+    a.href = url;
+    a.download = "origin-creator-settings.json";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    backupMessage.textContent = "Exported.";
+};
+
+importBtn.onclick = () => fileInput.click();
+
+fileInput.onchange = async () => {
+    const file = fileInput.files[0];
+    fileInput.value = "";
+    if (!file) return;
+
+    const result = parseSettings(await file.text());
+    if ("error" in result) {
+        backupMessage.textContent = result.error;
+        return;
+    }
+
+    const replace = importMode.value == "replace";
+    if (replace && Object.keys(settings).length && !confirm("Replace your current settings with the ones in this file?")) return;
+
+    settings = replace ? result.settings : mergeSettings(settings, result.settings);
+    saveSettings(settings);
+    accentSelect.value = settings.accent == "blue" ? "blue" : "purple";
+    applyAccent(settings.accent);
+    reset();
+    renderList();
+    backupMessage.textContent = result.skipped ? `Imported. Skipped ${result.skipped} invalid entr${result.skipped == 1 ? "y" : "ies"}.` : "Imported.";
+};
