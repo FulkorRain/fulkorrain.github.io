@@ -20,18 +20,17 @@ function fire(el: HTMLElement) {
     el.dispatchEvent(new Event("change", { bubbles: true }));
 }
 
-function addToList(field: Element, value: string): boolean {
+function addToList(field: Element, value: string | string[]): boolean {
     const area = field.querySelector("textarea.tlist") as HTMLTextAreaElement | null;
     if (!area) return false;
 
-    area.value = area.value.trim() ? area.value.replace(/\s+$/, "") + "\n" + value : value;
+    const add = Array.isArray(value) ? value.join("\n") : value;
+    area.value = area.value.trim() ? area.value.replace(/\s+$/, "") + "\n" + add : add;
     fire(area);
     return true;
 }
 
-function applyValue(button: HTMLElement, value: string): boolean {
-    const field = button.closest(".field");
-    if (!field) return false;
+function applyToField(field: Element, value: string): boolean {
     if (field.getAttribute("jtype") == "list") return addToList(field, value);
 
     if (!valueSelect(field) && !chooserSelect(field) && !textInput(field)) {
@@ -72,6 +71,71 @@ function applyValue(button: HTMLElement, value: string): boolean {
 
     return false;
 }
+
+function applyValue(button: HTMLElement, value: string): boolean {
+    const field = button.closest(".field");
+    return !!field && applyToField(field, value);
+}
+
+type MultiKind = "list" | "entries" | null;
+
+function entryOf(field: Element): HTMLElement | null {
+    const entry = field.parentElement?.closest("[jtype]") as HTMLElement | null;
+    if (!entry || entry.getAttribute("jtype") != "object" || entry.hasAttribute("named")) return null;
+    if (!/^\d+$/.test(entry.getAttribute("jid") ?? "")) return null;
+    const owner = entry.parentElement?.closest("[jtype]");
+    return owner && owner.getAttribute("jtype") == "list" ? entry : null;
+}
+
+function cloneButton(entry: HTMLElement): HTMLElement | undefined {
+    const buttons = Array.from(entry.querySelectorAll("button[onclick*='cloneListItem']")) as HTMLElement[];
+    return buttons.find(b => b.parentElement?.parentElement === entry);
+}
+
+function multiKind(button: HTMLElement): MultiKind {
+    const field = button.closest(".field");
+    if (!field) return null;
+    if (field.getAttribute("jtype") == "list") return field.querySelector("textarea.tlist") ? "list" : null;
+
+    const entry = entryOf(field);
+    return entry && cloneButton(entry) ? "entries" : null;
+}
+
+function indexPath(from: Element, to: Element): number[] {
+    const path: number[] = [];
+    for (let e: Element = from; e != to; e = e.parentElement) {
+        path.unshift(Array.prototype.indexOf.call(e.parentElement.children, e));
+    }
+    return path;
+}
+
+function follow(root: Element, path: number[]): Element | null {
+    let e: Element | null = root;
+    for (const i of path) e = e?.children[i] ?? null;
+    return e;
+}
+
+function applyMany(button: HTMLElement, values: string[]): boolean {
+    const field = button.closest(".field");
+    const kind = multiKind(button);
+    if (!field || !kind || values.length == 0) return false;
+    if (kind == "list") return addToList(field, values);
+
+    let entry = entryOf(field);
+    const path = indexPath(field, entry);
+
+    for (let i = 0; i < values.length; i++) {
+        if (i > 0) {
+            cloneButton(entry).click();
+            entry = entry.nextElementSibling as HTMLElement;
+        }
+        const target = follow(entry, path);
+        if (!target || !applyToField(target, values[i])) return false;
+    }
+    return true;
+}
+
+let multiOn = false;
 
 // Helper panel resize
 const EDGE = 8;
@@ -115,7 +179,28 @@ function open(button: HTMLElement) {
     x.textContent = "×";
     x.title = "Close";
     x.addEventListener("click", close);
-    head.append(title, x);
+
+    const kind = helper.kind == "sprites" ? null : multiKind(button);
+    const picked: string[] = [];
+    let multi = !!kind && multiOn;
+
+    const right = document.createElement("div");
+    right.className = "jhelper-head-right";
+    const toggle = document.createElement("button");
+    toggle.type = "button";
+    toggle.className = "jhelper-multi";
+    toggle.textContent = "+";
+    toggle.title = kind == "list" ? "Pick several values and add them all at once" : "Pick several values and create one entry for each";
+    const clear = document.createElement("button");
+    clear.type = "button";
+    clear.className = "jhelper-clear";
+    clear.textContent = "Clear";
+    const apply = document.createElement("button");
+    apply.type = "button";
+    apply.className = "jhelper-apply";
+    if (kind) right.append(clear, apply, toggle);
+    right.append(x);
+    head.append(title, right);
 
     // Sprite pickers
     if (helper.kind == "sprites") {
@@ -138,6 +223,16 @@ function open(button: HTMLElement) {
     const note = document.createElement("div");
     note.className = "jhelper-note";
 
+    const sync = () => {
+        toggle.setAttribute("aria-pressed", String(multi));
+        list.classList.toggle("jhelper-multi-on", multi);
+        clear.hidden = !multi;
+        apply.hidden = !multi;
+        apply.textContent = `Add (${picked.length})`;
+        apply.disabled = picked.length == 0;
+        clear.disabled = picked.length == 0;
+    };
+
     const all = helperSections(helper);
 
     const render = () => {
@@ -159,6 +254,7 @@ function open(button: HTMLElement) {
                 b.type = "button";
                 b.className = "jhelper-item";
                 b.setAttribute("data-value", item.value);
+                if (multi && picked.includes(item.value)) b.classList.add("jhelper-picked");
                 b.textContent = item.value;
                 if (item.desc) {
                     const d = document.createElement("span");
@@ -182,14 +278,45 @@ function open(button: HTMLElement) {
     list.addEventListener("click", (e) => {
         const b = (e.target as Element).closest(".jhelper-item") as HTMLElement | null;
         if (!b || !anchor) return;
-        if (applyValue(anchor, b.getAttribute("data-value") || "")) {
+        const value = b.getAttribute("data-value") || "";
+        if (multi) {
+            const at = picked.indexOf(value);
+            if (at >= 0) picked.splice(at, 1);
+            else picked.push(value);
+            b.classList.toggle("jhelper-picked", at < 0);
+            note.textContent = "";
+            sync();
+            return;
+        }
+        if (applyValue(anchor, value)) {
             close();
         } else {
             note.textContent = "That value isn't available in this field.";
         }
     });
 
+    toggle.addEventListener("click", () => {
+        multi = !multi;
+        multiOn = multi;
+        picked.length = 0;
+        note.textContent = "";
+        sync();
+        render();
+        place();
+    });
+    clear.addEventListener("click", () => {
+        picked.length = 0;
+        sync();
+        render();
+    });
+    apply.addEventListener("click", () => {
+        if (!anchor) return;
+        if (applyMany(anchor, picked.slice())) close();
+        else note.textContent = "Those values couldn't be added here.";
+    });
+
     el.append(head, search, list, note);
+    sync();
     render();
     document.body.appendChild(el);
     panel = el;

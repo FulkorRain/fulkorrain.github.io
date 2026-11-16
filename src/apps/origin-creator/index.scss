@@ -411,6 +411,46 @@ html[theme=dark] {
     font-weight: 600;
 }
 
+.jhelper-head-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.jhelper-multi {
+    width: 20px;
+    padding: 0;
+    text-align: center;
+    border: 1px solid var(--anti-color, #888);
+    border-radius: 10px;
+    background: none;
+    color: inherit;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 18px;
+
+    &[aria-pressed=true] {
+        background-color: var(--sel-fill-color, #8ee);
+        border-color: var(--sel-border-color, #6bb);
+    }
+}
+
+.jhelper-clear, .jhelper-apply {
+    width: auto;
+    padding: 0 6px;
+    font-size: 12px;
+    line-height: 18px;
+    cursor: pointer;
+
+    &[hidden] {
+        display: none;
+    }
+}
+
+.jhelper-multi-on .jhelper-item.jhelper-picked {
+    background-color: var(--sel-fill-color, #8ee3);
+}
+
 .jhelper-close {
     width: auto;
     border: none;
