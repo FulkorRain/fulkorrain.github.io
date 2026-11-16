@@ -54,11 +54,11 @@ const accentSelect = dropdown([["purple", "Purple"], ["blue", "Blue (classic)"]]
     applyAccent(v);
 });
 
-row("Site colours", "Switch the site between the purple theme and the classic blue.", accentSelect);
+row("Site colours", "Switch site theme between the purple theme and blue.", accentSelect);
 
-heading("Custom helper lists");
+heading("Custom helper menus");
 
-const intro = make("p", "sintro", "Add your own entries to a helper menu in the Origin Creator, One ID per line, like modid:name.");
+const intro = make("p", "sintro", "Add items to the Helper Menus in Origin Creator");
 root.appendChild(intro);
 
 const form = make("div", "setting col");
@@ -114,7 +114,7 @@ function renderList() {
         for (const section of list) {
             const el = make("div", "setting");
             const info = make("div", "info");
-            info.append(make("b", "", section.label), make("small", "", `${section.items.length} entries`));
+            info.append(make("b", "", section.label), make("small", "", `${section.items.length} items`));
 
             const actions = make("div", "sbuttons");
             const edit = make("button", "sbtn", "Edit");
@@ -196,7 +196,7 @@ heading("Backup");
 const backup = make("div", "setting col");
 const exportBtn = make("button", "sbtn", "Export settings");
 exportBtn.type = "button";
-const importMode = dropdown([["replace", "Replace my settings"], ["merge", "Merge into my settings"]], "replace", () => {});
+const importMode = dropdown([["replace", "Replace settings"], ["merge", "Merge into settings"]], "replace", () => {});
 const importBtn = make("button", "sbtn", "Import settings");
 importBtn.type = "button";
 const fileInput = make("input");
@@ -210,8 +210,6 @@ exportRow.append(exportBtn);
 const importRow = make("div", "sbuttons");
 importRow.append(importMode, importBtn, fileInput);
 backup.append(
-    make("b", "", "Save or restore everything on this page"),
-    make("small", "", "Export downloads a file you can keep as a backup or share. Import reads one back."),
     exportRow,
     importRow,
     backupMessage
@@ -245,7 +243,7 @@ fileInput.onchange = async () => {
     }
 
     const replace = importMode.value == "replace";
-    if (replace && Object.keys(settings).length && !confirm("Replace your current settings with the ones in this file?")) return;
+    if (replace && Object.keys(settings).length && !confirm("Replace Settings?")) return;
 
     settings = replace ? result.settings : mergeSettings(settings, result.settings);
     saveSettings(settings);
