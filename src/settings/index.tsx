@@ -58,18 +58,18 @@ row("Site colours", "Switch the site between the purple theme and the classic bl
 
 heading("Custom helper lists");
 
-const intro = make("p", "sintro", "Add your own entries to a helper menu in the Origin Creator, for example items from a mod you often use. One ID per line, like modid:name.");
+const intro = make("p", "sintro", "Add your own entries to a helper menu in the Origin Creator, One ID per line, like modid:name.");
 root.appendChild(intro);
 
 const form = make("div", "setting col");
 const helperSelect = dropdown(HELPERS, HELPERS[0][0], () => {});
 const labelInput = make("input", "sinput");
 labelInput.type = "text";
-labelInput.placeholder = "Section name, e.g. Farmer's Delight";
+labelInput.placeholder = "Group Name";
 labelInput.maxLength = 60;
 const itemsArea = make("textarea", "sinput");
 itemsArea.rows = 6;
-itemsArea.placeholder = "farmersdelight:cabbage\nfarmersdelight:tomato";
+itemsArea.placeholder = "modid:item\nmodid:block";
 itemsArea.spellcheck = false;
 const buttons = make("div", "sbuttons");
 const saveBtn = make("button", "sbtn", "Add section");
@@ -148,7 +148,7 @@ function renderList() {
         }
     }
 
-    if (!any) listBox.appendChild(make("p", "sintro", "No custom sections yet."));
+    if (!any) listBox.appendChild(make("p", "sintro", "Nothing here yet."));
 }
 
 saveBtn.onclick = () => {
