@@ -196,7 +196,7 @@ heading("Backup");
 const backup = make("div", "setting col");
 const exportBtn = make("button", "sbtn", "Export settings");
 exportBtn.type = "button";
-const importMode = dropdown([["replace", "Replace settings"], ["merge", "Merge into settings"]], "replace", () => {});
+const importMode = dropdown([["replace", "Replace settings"], ["merge", "Merge settings"]], "replace", () => {});
 const importBtn = make("button", "sbtn", "Import settings");
 importBtn.type = "button";
 const fileInput = make("input");
