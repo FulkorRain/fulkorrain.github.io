@@ -545,6 +545,27 @@ export const JSONED = {
             }
         }
     },
+    wrapValues(field: HTMLElement, values: string[], wrapper: string, listKey: string): boolean {
+        const prop = field.getAttribute("jid");
+        let owner = field.parentElement?.closest("[jtype]") as HTMLElement | null;
+        while (owner && owner.getAttribute("jtype") == "more") owner = owner.parentElement?.closest("[jtype]") as HTMLElement | null;
+        if (!prop || !owner || owner.getAttribute("jtype") != "object" || values.length < 2) return false;
+
+        const [d, k] = JSONED.findData(owner, PROJECT.aid);
+        const node = simplify(get(d, k));
+        if (!node || typeof node != "object" || !node.type) return false;
+
+        const inverted = node.inverted;
+        if (listKey == "conditions") delete node.inverted;
+
+        const combined: any = { type: wrapper, [listKey]: values.map(v => ({ ...node, [prop]: v })) };
+        if (inverted !== undefined && listKey == "conditions") combined.inverted = inverted;
+
+        set(d, k, combined);
+        update();
+        JSONED.refresh();
+        return true;
+    },
     changeToMultiple(typeElem: HTMLSelectElement) {
         const pt: HTMLSelectElement = typeElem.parentElement.parentElement.parentElement.parentElement.firstElementChild.firstElementChild as HTMLSelectElement;
         pt.value = '1';

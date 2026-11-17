@@ -77,11 +77,42 @@ function applyValue(button: HTMLElement, value: string): boolean {
     return !!field && applyToField(field, value);
 }
 
-type MultiKind = "list" | "entries" | null;
+type MultiKind = "list" | "entries" | "wrap" | null;
+
+type WrapInfo = { ops: string[]; key: string };
+
+function wrapInfo(field: Element): WrapInfo | null {
+    const owner = ownerOf(field);
+    if (!owner || owner.getAttribute("jtype") != "object") return null;
+
+    const select = (Array.from(owner.querySelectorAll(".field[jid='type'] select")) as HTMLSelectElement[])
+        .find(s => s.closest("[jtype='object']") === owner);
+    if (!select) return null;
+
+    const ids: Record<string, string> = {};
+    for (const o of Array.from(select.options)) {
+        const m = /^string-(.+):(and|or)$/.exec(o.value);
+        if (m) ids[m[2]] = `${m[1]}:${m[2]}`;
+    }
+    if (!ids.and) return null;
+
+    const ops = ids.or ? ["or", "and"] : ["and"];
+    return { ops: ops.map(op => ids[op]), key: ids.or ? "conditions" : "actions" };
+}
+
+function ownerOf(from: Element | null): HTMLElement | null {
+    let e = from?.parentElement?.closest("[jtype]") as HTMLElement | null;
+    while (e && e.getAttribute("jtype") == "more") e = e.parentElement?.closest("[jtype]") as HTMLElement | null;
+    return e;
+}
 
 function entryOf(field: Element): HTMLElement | null {
-    const entry = field.parentElement?.closest("[jtype]") as HTMLElement | null;
-    if (!entry || entry.getAttribute("jtype") != "object" || entry.hasAttribute("named")) return null;
+    let entry = ownerOf(field);
+    if (entry && entry.getAttribute("jtype") == "object") {
+        const up = entry.parentElement?.closest("[jtype]") as HTMLElement | null;
+        if (up && up.getAttribute("jtype") == "or") entry = up;
+    }
+    if (!entry || !["object", "or"].includes(entry.getAttribute("jtype")) || entry.hasAttribute("named")) return null;
     if (!/^\d+$/.test(entry.getAttribute("jid") ?? "")) return null;
     const owner = entry.parentElement?.closest("[jtype]");
     return owner && owner.getAttribute("jtype") == "list" ? entry : null;
@@ -98,7 +129,8 @@ function multiKind(button: HTMLElement): MultiKind {
     if (field.getAttribute("jtype") == "list") return field.querySelector("textarea.tlist") ? "list" : null;
 
     const entry = entryOf(field);
-    return entry && cloneButton(entry) ? "entries" : null;
+    if (entry) return cloneButton(entry) ? "entries" : null;
+    return wrapInfo(field) ? "wrap" : null;
 }
 
 function indexPath(from: Element, to: Element): number[] {
@@ -115,11 +147,17 @@ function follow(root: Element, path: number[]): Element | null {
     return e;
 }
 
-function applyMany(button: HTMLElement, values: string[]): boolean {
+function applyMany(button: HTMLElement, values: string[], wrapper?: string): boolean {
     const field = button.closest(".field");
     const kind = multiKind(button);
     if (!field || !kind || values.length == 0) return false;
     if (kind == "list") return addToList(field, values);
+    if (kind == "wrap") {
+        if (values.length == 1) return applyToField(field, values[0]);
+        const info = wrapInfo(field);
+        const use = wrapper && info.ops.includes(wrapper) ? wrapper : info.ops[0];
+        return (window as any).JSONED.wrapValues(field, values, use, info.key);
+    }
 
     let entry = entryOf(field);
     const path = indexPath(field, entry);
@@ -136,6 +174,7 @@ function applyMany(button: HTMLElement, values: string[]): boolean {
 }
 
 let multiOn = false;
+let lastOp = "";
 
 // Helper panel resize
 const EDGE = 8;
@@ -190,7 +229,9 @@ function open(button: HTMLElement) {
     toggle.type = "button";
     toggle.className = "jhelper-multi";
     toggle.textContent = "+";
-    toggle.title = kind == "list" ? "Pick several values and add them all at once" : "Pick several values and create one entry for each";
+    toggle.title = kind == "list" ? "Pick several values and add them all at once"
+        : kind == "wrap" ? "Pick several values and combine them with and / or"
+        : "Pick several values and create one entry for each";
     const clear = document.createElement("button");
     clear.type = "button";
     clear.className = "jhelper-clear";
@@ -198,6 +239,18 @@ function open(button: HTMLElement) {
     const apply = document.createElement("button");
     apply.type = "button";
     apply.className = "jhelper-apply";
+    const info = kind == "wrap" ? wrapInfo(button.closest(".field")) : null;
+    const op = document.createElement("select");
+    op.className = "jhelper-op";
+    for (const id of info?.ops ?? []) {
+        const o = document.createElement("option");
+        o.value = id;
+        o.textContent = id.endsWith(":or") ? "Or" : "And";
+        op.appendChild(o);
+    }
+    if (info?.ops.includes(lastOp)) op.value = lastOp;
+    op.addEventListener("change", () => { lastOp = op.value; });
+    if (info && info.ops.length > 1) right.append(op);
     if (kind) right.append(clear, apply, toggle);
     right.append(x);
     head.append(title, right);
@@ -228,6 +281,7 @@ function open(button: HTMLElement) {
         list.classList.toggle("jhelper-multi-on", multi);
         clear.hidden = !multi;
         apply.hidden = !multi;
+        op.hidden = !multi;
         apply.textContent = `Add (${picked.length})`;
         apply.disabled = picked.length == 0;
         clear.disabled = picked.length == 0;
@@ -311,7 +365,7 @@ function open(button: HTMLElement) {
     });
     apply.addEventListener("click", () => {
         if (!anchor) return;
-        if (applyMany(anchor, picked.slice())) close();
+        if (applyMany(anchor, picked.slice(), op.value)) close();
         else note.textContent = "Those values couldn't be added here.";
     });
 

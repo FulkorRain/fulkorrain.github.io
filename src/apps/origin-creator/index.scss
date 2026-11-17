@@ -406,6 +406,8 @@ html[theme=dark] {
 
 .jhelper-head {
     display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
     justify-content: space-between;
     align-items: center;
     font-weight: 600;
@@ -432,6 +434,15 @@ html[theme=dark] {
     &[aria-pressed=true] {
         background-color: var(--sel-fill-color, #8ee);
         border-color: var(--sel-border-color, #6bb);
+    }
+}
+
+.jhelper-op {
+    width: auto;
+    font-size: 12px;
+
+    &[hidden] {
+        display: none;
     }
 }
 
