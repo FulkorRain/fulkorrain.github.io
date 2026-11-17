@@ -35,6 +35,7 @@ function AddTypeButton(props) {
 }
 
 let importZip = null;
+let importZipName = "";
 let importZipOrigined = null;
 
 function ImportButton(props) {
@@ -153,6 +154,7 @@ function ImportButton(props) {
 
                 try {
                     importZip = zip;
+                    importZipName = file.name.replace(/\.(zip|jar)$/i, "").trim();
                     importZipOrigined = (Object.keys(zip.files).findIndex(v => v.split("/")[1] == "origins")) > -1;
                     handleImportMenuOpen();
                 } catch (err) {
@@ -212,8 +214,9 @@ function ImportButton(props) {
                         // Update project data
                         PROJECT.parent = {};
                         PROJECT.active = "";
-                        const pmeta = {name: thename};
-                        if (!autoDef) pmeta["id"] = snakeCase(thename).replace(/[^A-Za-z0-9_]+/g, "").replace(/^\d/, "d");
+                        const importName = importZipName || thename;
+                        const pmeta = {name: importName};
+                        if (!autoDef) pmeta["id"] = snakeCase(importName).replace(/[^A-Za-z0-9_]+/g, "").replace(/^\d/, "d");
                         PROJECT.data = {meta: pmeta};
                     }
 

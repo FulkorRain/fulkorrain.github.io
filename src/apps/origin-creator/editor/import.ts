@@ -44,7 +44,7 @@ export async function extract(zip: JSZip, updateMetadata: boolean = true, includ
             }
 
             if (meta?.id) set(pmeta, "id", String(meta.id).trim());
-            if (meta?.name) set(pmeta, "meta", String(meta.name).trim());
+            if (meta?.name) set(pmeta, "name", String(meta.name).trim());
             if (meta?.version) set(pmeta, "version", String(meta.version));
             if (meta?.description) set(pmeta, "description", String(meta.description));
             if (Array.isArray(meta?.authors)) set(pmeta, "authors", meta.authors);
