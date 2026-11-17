@@ -89,6 +89,8 @@ export function save() {
     updateUsedSize();
 }
 export function updatePRaw() {
+    if (document.getElementById("projects")?.hasAttribute("hidden")) return;
+
     function isEmptyFolder(v) {
         if (typeof v != "object") return false;
         if (keys(v).length == 0) return true;
@@ -119,7 +121,7 @@ export function updateUsedSize() {
     // }
     for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
-        size += new Blob([key]).size + new Blob([localStorage.getItem(key)]).size;
+        size += key.length + (localStorage.getItem(key)?.length ?? 0);
     }
 
     const spuElem = document.querySelector("#spaceused");

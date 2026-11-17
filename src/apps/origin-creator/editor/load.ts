@@ -4,6 +4,22 @@ import { ISchema } from "./editor";
 import { JSONED, traceItem } from "./global";
 import { get, set, OMap, del, keys, has } from "./wrapper";
 
+let measureCtx: CanvasRenderingContext2D | null = null;
+const labelWidths = new Map<string, number>();
+if (typeof document !== "undefined" && document.fonts) document.fonts.addEventListener("loadingdone", () => labelWidths.clear());
+function labelWidth(text: string): number {
+    let w = labelWidths.get(text);
+    if (w === undefined) {
+        if (!measureCtx) {
+            measureCtx = document.createElement("canvas").getContext("2d");
+            measureCtx.font = '400 16px Arial, Helvetica, sans-serif, bootstrap-icons';
+        }
+        w = measureCtx.measureText(text).width + 2;
+        labelWidths.set(text, w);
+    }
+    return w;
+}
+
 export function updatePanels() {
     // Darken panels
     document.querySelectorAll("section .panel").forEach(el => {
@@ -14,10 +30,6 @@ export function updatePanels() {
         }
     });
 
-    const canvas = document.createElement("canvas");
-    const context = canvas.getContext("2d");
-    context.font = '400 16px Arial, Helvetica, sans-serif, bootstrap-icons';
-
     // Update column widths
     document.querySelectorAll("[jtype=object]").forEach(el => {
         // eslint-disable-next-line no-undef
@@ -27,18 +39,16 @@ export function updatePanels() {
         // Calculate minimum size
         let minWidth = 100;
         for (const label of labels) {
-            const width = context.measureText(label.textContent).width + 2;
+            const width = labelWidth(label.textContent);
             if (width > minWidth) minWidth = width;
         }
 
-        // Set size of all labels to minimum size
+        const px = String(minWidth) + "px";
         for (const label of labels) {
-            label.style.width = String(minWidth) + "px";
-            label.style.minWidth = String(minWidth) + "px";
+            if (label.style.width !== px) label.style.width = px;
+            if (label.style.minWidth !== px) label.style.minWidth = px;
         }
     });
-
-    canvas.remove();
 }
 
 
@@ -142,7 +152,20 @@ function gatherMore(id: string, props: {[key: string]: any}, talias: {[key: stri
     return true;
 }
 
+let validCache = new WeakMap<object, Map<ISchema, boolean>>();
+let loadDepth = 0;
+
 export function isValid(id: string, ssor: ISchema, v: any): boolean {
+    if (v === null || typeof v !== "object") return isValidUncached(id, ssor, v);
+
+    let perValue = validCache.get(v);
+    if (!perValue) validCache.set(v, perValue = new Map());
+    let valid = perValue.get(ssor);
+    if (valid === undefined) perValue.set(ssor, valid = isValidUncached(id, ssor, v));
+    return valid;
+}
+
+function isValidUncached(id: string, ssor: ISchema, v: any): boolean {
     // TODO: more extensive evaluation
     const t = typeof v;
 
@@ -243,6 +266,16 @@ function loadMore(id: string, v: any, item: ISchema, out: string, ielem: HTMLEle
 }
 
 export function load(id: string, p: any, k: string | number, elem: HTMLElement, schema?: ISchema, r: boolean = false): any {
+    if (loadDepth === 0) validCache = new WeakMap();
+    loadDepth++;
+    try {
+        return loadInner(id, p, k, elem, schema, r);
+    } finally {
+        loadDepth--;
+    }
+}
+
+function loadInner(id: string, p: any, k: string | number, elem: HTMLElement, schema?: ISchema, r: boolean = false): any {
     if (!elem) {
         console.log(schema);
         throw Error(`Attempt to load non-existant element in ${id}, key ${k}`);

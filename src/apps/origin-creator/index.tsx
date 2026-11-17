@@ -68,7 +68,7 @@ render(<Ace name="rawr" mode="json" height="200px" hidden/>, rawdiv);
 render(
     (<>
         <button className="normal" title="Toggle the visibility of the raw editor." onClick={() => {
-            update(false);
+            update(false, true);
             $("#rawr").toggleAttribute("hidden");
             const buttons = rawdiv.previousElementSibling.querySelectorAll("button");
             buttons[1].toggleAttribute("hidden");
@@ -81,7 +81,7 @@ render(
             updateName();
         }}><Icon type="arrow-up-circle"/></button>
         <button hidden className="normal" title="Refresh the raw editor's content, undoing any changes made in the editor, but not on the page." onClick={() => {
-            update(false);
+            update(false, true);
         }}><Icon type="arrow-clockwise"/></button>
         <button className="normal" title="Download the raw as a json file." onClick={() => {
             let fname = PROJECT.active || "file.json";
@@ -125,8 +125,8 @@ export function fixBarry() {
 
 // Handle editor updates
 let saveQueued = 0;
-export function update(andsave: boolean = true) {
-    if (PROJECT.active) {
+export function update(andsave: boolean = true, forceRaw: boolean = false) {
+    if (PROJECT.active && (forceRaw || !$("#rawr").hasAttribute("hidden"))) {
         const data = PROJECT.parent[PROJECT.active];
         if (data !== undefined) {
             window["ace_rawr"].setValue(JSON.stringify(data, null, 4), -1);
@@ -232,36 +232,36 @@ window.addEventListener("DOMContentLoaded", async () => {
         }
 
         // Resolve all built links
-        function fixLinks(html: string): string {
-            let links = new Set<string>();
-            let out = html;
+        const resolvedLinks: {[key: string]: string} = {};
+        function fixLinks(html: string, stack: string[] = []): string {
+            return html.replace(/<@(.*?)@(.*?)>/g, (_, id, link) => {
+                const suffix = "-link-" + unescape(link);
 
-            while (out.includes("<@")) {
-                const nlinks = [];
+                let key: string;
+                const [file, sver] = id.split("-");
+                let ver = parseInt(sver);
+                do {
+                    key = `${file}-${ver}${suffix}`;
+                } while (!(key in JSONED.htmls) && --ver > 0);
 
-                out = out.replace(/<@(.*?)@(.*?)>/g, (_, id, link) => {
-                    // Locate the newest html for the current file version:
-                    const suffix = "-link-" + unescape(link);
+                if (!(key in JSONED.htmls)) throw Error(`Unknown link "${unescape(`${id}@${link}`)}"`);
+                if (stack.includes(key)) throw Error(`infinite illegal recursive loop in link "${unescape([...stack, key].join(" -> "))}".`);
 
-                    let key: string;
-                    const [file, sver] = id.split("-");
-                    let ver = parseInt(sver);
-                    do {
-                        key = `${file}-${ver}${suffix}`;
-                    } while (!(key in JSONED.htmls) && --ver > 0);
-
-                    if (links.has(key)) throw Error(`infinite illegal recursive loop in link "${unescape(key)}".`);
-                    nlinks.push(key);
-                    
-                    if (!(key in JSONED.htmls)) throw Error(`Unknown link "${unescape(`${id}@${link}`)}"`);
-                    return JSONED.htmls[key];
-                });
-                for (const link of nlinks) links.add(link);
-            }
-            return out;
+                if (!(key in resolvedLinks)) resolvedLinks[key] = fixLinks(JSONED.htmls[key], [...stack, key]);
+                return resolvedLinks[key];
+            });
         }
         for (const [k, html] of Object.entries(JSONED.htmls)) {
-            JSONED.htmls[k] = fixLinks(html);
+            JSONED.htmls[k] = fixLinks(html, [k]);
+        }
+
+        {
+            const pool = new Map<string, string>();
+            for (const [k, html] of Object.entries(JSONED.htmls)) {
+                const shared = pool.get(html);
+                if (shared === undefined) pool.set(html, html);
+                else JSONED.htmls[k] = shared;
+            }
         }
 
         // Import html into all editors
