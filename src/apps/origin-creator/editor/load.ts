@@ -2,7 +2,6 @@ import { PROJECT } from "../projects";
 import { regescape, resolve } from "./build";
 import { ISchema } from "./editor";
 import { JSONED, traceItem } from "./global";
-import { showOption } from "./lazyselect";
 import { get, set, OMap, del, keys, has } from "./wrapper";
 
 let measureCtx: CanvasRenderingContext2D | null = null;
@@ -544,9 +543,7 @@ function loadInner(id: string, p: any, k: string | number, elem: HTMLElement, sc
             }
 
             const val = `${typeof v}-${v}`;
-            const select = e.querySelector("select");
-            showOption(select, val, String(v));
-            select.value = val;
+            e.querySelector("select").value = val;
             return val;
         }
         case "image":

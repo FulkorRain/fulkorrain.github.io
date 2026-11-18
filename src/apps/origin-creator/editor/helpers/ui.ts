@@ -1,4 +1,3 @@
-import { fillLazySelect } from "../lazyselect";
 import { getHelper, helperSections } from "./registry";
 import { spritePicker } from "./sprites";
 
@@ -13,11 +12,7 @@ function close() {
 }
 
 const isChooser = (s: HTMLSelectElement) => Array.from(s.options).some(o => o.hasAttribute("key"));
-const valueSelect = (f: Element) => {
-    const select = Array.from(f.querySelectorAll("select")).find(s => !isChooser(s)) as HTMLSelectElement | undefined;
-    if (select) fillLazySelect(select);
-    return select;
-};
+const valueSelect = (f: Element) => Array.from(f.querySelectorAll("select")).find(s => !isChooser(s)) as HTMLSelectElement | undefined;
 const chooserSelect = (f: Element) => Array.from(f.querySelectorAll("select")).find(isChooser) as HTMLSelectElement | undefined;
 const textInput = (f: Element) => f.querySelector("input[type=text], textarea") as HTMLInputElement | HTMLTextAreaElement | null;
 
@@ -93,7 +88,6 @@ function wrapInfo(field: Element): WrapInfo | null {
     const select = (Array.from(owner.querySelectorAll(".field[jid='type'] select")) as HTMLSelectElement[])
         .find(s => s.closest("[jtype='object']") === owner);
     if (!select) return null;
-    fillLazySelect(select);
 
     const ids: Record<string, string> = {};
     for (const o of Array.from(select.options)) {

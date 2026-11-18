@@ -1,5 +1,3 @@
-import { fillLazySelect } from "../lazyselect";
-
 const MIN_OPTIONS = 10;
 
 type Entry = { group: string | null; value: string; text: string };
@@ -10,14 +8,12 @@ let teardown: (() => void) | null = null;
 
 function eligible(target: EventTarget | null): HTMLSelectElement | null {
     if (!(target instanceof HTMLSelectElement)) return null;
-    fillLazySelect(target);
     if (target.disabled || target.options.length < MIN_OPTIONS) return null;
     if (!target.closest("#workspace")) return null;
     return target;
 }
 
 function entries(select: HTMLSelectElement): Entry[] {
-    fillLazySelect(select);
     const out: Entry[] = [];
     for (const child of Array.from(select.children)) {
         if (child instanceof HTMLOptGroupElement) {

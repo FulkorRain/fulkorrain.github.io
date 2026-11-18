@@ -3,7 +3,6 @@ import { block, unblock } from "../component/backdrop";
 import { PROJECT, updateName } from "../projects";
 import { Schema, MSchema } from "./editor";
 import { updatePanels, findSchema, load } from "./load";
-import { fillLazySelect } from "./lazyselect";
 import { OMap, set, get, del, has, simplify, keys } from "./wrapper";
 
 import "./api";
@@ -395,7 +394,7 @@ export const JSONED = {
     },
     switchData(target: HTMLElement, value: string, id: string, {noload, save}: {noload?: boolean, save?: boolean}) {
         // Just in case, set target value
-        if (target) { fillLazySelect(target as HTMLSelectElement); (target as any).value = value; }
+        if (target) (target as any).value = value;
 
         // Delete any lingering html
         const e = target?.parentElement?.parentElement?.querySelector(":scope > [jtype]");
@@ -513,7 +512,6 @@ export const JSONED = {
     },
     fixTypeFromCondition(typeElem: HTMLSelectElement, enabled: boolean) {
         if (!typeElem) return;
-        fillLazySelect(typeElem);
 
         if (enabled) {
             if (typeElem.value == "string-origins:attribute" || typeElem.value == "string-origins:restrict_armor") {
