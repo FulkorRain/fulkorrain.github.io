@@ -43,8 +43,8 @@ export function viewSection(id: string) {
     if (nh) nh.setAttribute("hidden", "");
 
     if (id == "workspace" && !PROJECT.active) return;
-    if (id == "projects") updatePRaw();
     $("#"+id).removeAttribute("hidden");
+    if (id == "projects") updatePRaw();
 }
 
 // Change theme of ace editors
