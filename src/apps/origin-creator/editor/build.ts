@@ -4,6 +4,7 @@ import { PROJECT } from "../projects";
 import { Schema, ISchema, SList, SGeneral } from "./editor";
 import { JSONED } from "./global";
 import { helperButton } from "./helpers";
+import { LAZY_MIN_OPTIONS, registerEnumOptions } from "./lazyselect";
 
 export function regescape(s: string) {
     return s.replace(/\\/g, "\\\\").replace(/\]/g, "\\]").replace(/\//g, "\\/");
@@ -358,12 +359,16 @@ export function build(s: ISchema, id: string, show?: boolean, nopanel?: boolean)
             }
 
             if (s.unspec) opts.unshift('<option value="undefined-undefined">undefined</option>');
+            const optionTags = opts.filter((o) => o.startsWith("<option"));
+            const lazy = optionTags.length >= LAZY_MIN_OPTIONS;
+            const optHtml = lazy ? (optionTags.find((o) => o.startsWith("<option selected")) ?? optionTags[0]) : opts.join("");
+            const lazyAttr = lazy ? ` lazyopts="${registerEnumOptions(opts.join(""))}"` : "";
 
-            return t(`<select onchange="
+            return t(`<select${lazyAttr} onchange="
                 ${s.hooks?.includes("fix_cond") ? "JSONED.fixConditionFromType(this);" : ""}
                 ${s.hooks?.includes("fix_multiple") ? "if (this.value == 'string-origins:multiple') JSONED.changeToMultiple(this); else" : ""}
                 JSONED.setData(this, this.value, '${escape(id)}'${s.more ? `, ${n}` : ""});
-            ">${opts.join("")}</select>`);
+            ">${optHtml}</select>`);
         }
 
         case "tuple":
