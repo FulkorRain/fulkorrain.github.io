@@ -19,7 +19,6 @@ export function fillLazySelect(select: HTMLSelectElement) {
 
     const value = select.value;
     select.removeAttribute("lazyopts");
-    select.style.minWidth = "";
     select.innerHTML = optionHtmls[Number(id)];
     select.value = value;
 }

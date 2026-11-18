@@ -362,8 +362,7 @@ export function build(s: ISchema, id: string, show?: boolean, nopanel?: boolean)
             const optionTags = opts.filter((o) => o.startsWith("<option"));
             const lazy = optionTags.length >= LAZY_MIN_OPTIONS;
             const optHtml = lazy ? (optionTags.find((o) => o.startsWith("<option selected")) ?? optionTags[0]) : opts.join("");
-            const widest = lazy ? Math.max(...optionTags.map((o) => o.replace(/<[^>]*>/g, "").length)) : 0;
-            const lazyAttr = lazy ? ` lazyopts="${registerEnumOptions(opts.join(""))}" style="min-width:${widest + 3}ch"` : "";
+            const lazyAttr = lazy ? ` lazyopts="${registerEnumOptions(opts.join(""))}"` : "";
 
             return t(`<select${lazyAttr} onchange="
                 ${s.hooks?.includes("fix_cond") ? "JSONED.fixConditionFromType(this);" : ""}
