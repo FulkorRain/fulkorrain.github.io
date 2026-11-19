@@ -326,20 +326,44 @@ function open(button: HTMLElement) {
     };
 
     const all = helperSections(helper);
+    const tabbed = helper.tabs && all.length > 1;
+    let current = 0;
+
+    const tabs = document.createElement("div");
+    tabs.className = "jhelper-tabs";
+    if (tabbed) {
+        all.forEach((section, i) => {
+            const t = document.createElement("button");
+            t.type = "button";
+            t.className = "jhelper-tab";
+            t.textContent = section.label;
+            t.addEventListener("click", () => {
+                current = i;
+                render();
+                place();
+            });
+            tabs.appendChild(t);
+        });
+    }
 
     const render = () => {
         const q = search.value.trim().toLowerCase();
         list.textContent = "";
         let shown = 0;
+        const byTab = tabbed && !q;
+        Array.from(tabs.children).forEach((t, i) => t.classList.toggle("jhelper-tab-on", i == current));
 
-        for (const section of all) {
+        for (const [at, section] of all.entries()) {
+            if (byTab && at != current) continue;
             const items = section.items.filter(i => !q || i.value.toLowerCase().includes(q) || (i.desc || "").toLowerCase().includes(q));
             if (items.length === 0) continue;
 
-            const h = document.createElement("div");
-            h.className = "jhelper-section";
-            h.textContent = section.label;
-            list.appendChild(h);
+            if (!byTab) {
+                const h = document.createElement("div");
+                h.className = "jhelper-section";
+                h.textContent = section.label;
+                list.appendChild(h);
+            }
 
             for (const item of items) {
                 const b = document.createElement("button");
@@ -407,7 +431,7 @@ function open(button: HTMLElement) {
         else note.textContent = "Those values couldn't be added here.";
     });
 
-    el.append(head, search, list, note);
+    el.append(head, ...(tabbed ? [tabs] : []), search, list, note);
     sync();
     render();
     document.body.appendChild(el);

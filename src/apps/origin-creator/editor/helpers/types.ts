@@ -14,6 +14,7 @@ export type HelperSpec = {
     kind: "list" | "sprites";
     key: string;
     multi: string;
+    tabs: boolean;
     title: string;
     list: string[];
     id: string;

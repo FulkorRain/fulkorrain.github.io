@@ -19,6 +19,7 @@ export function helperButton(schema: any, fileId: string): string {
         kind: sprites ? "sprites" : "list",
         key: String(h.key ?? ""),
         multi: String(h.multi ?? ""),
+        tabs: h.tabs === true,
         title: String(h.title ?? "Helper"),
         list: arr(h.list),
         id: String(h.id ?? fileId.split("-")[0]),
