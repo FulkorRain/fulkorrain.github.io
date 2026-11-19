@@ -19,6 +19,7 @@ import { expand } from "./editor/build";
 
 import { fetchZip, ocrepo } from "./params";
 import { updatePanels } from "./editor/load";
+import { resetTruncation } from "./editor/truncate";
 import { oc } from "./editor/api";
 
 export const $: (query: string) => HTMLElement | null = document.querySelector.bind(document);
@@ -308,6 +309,7 @@ globalThis.selected = null;
 globalThis.selected = null;
 
 export function loadEditor(type: string, heading: string | null) {
+    if (heading) resetTruncation();
     // Deselect anything if it's selected
     if (globalThis.selected) {
         globalThis.selected?.classList?.remove("panel-sel");

@@ -4,6 +4,7 @@ import { PROJECT, updateName } from "../projects";
 import { Schema, MSchema } from "./editor";
 import { updatePanels, findSchema, load } from "./load";
 import { OMap, set, get, del, has, simplify, keys } from "./wrapper";
+import { setShown } from "./truncate";
 
 import "./api";
 
@@ -157,14 +158,25 @@ export const JSONED = {
 
         update();
     },
+    showMore(btn: HTMLElement) {
+        const [d, k] = JSONED.findData(btn, PROJECT.aid);
+        setShown(get(d, k), Number(btn.parentElement.getAttribute("data-next")));
+        JSONED.refresh();
+    },
+    showAll(btn: HTMLElement) {
+        const [d, k] = JSONED.findData(btn, PROJECT.aid);
+        setShown(get(d, k), Infinity);
+        JSONED.refresh();
+    },
     addListItem(target: HTMLElement, type: string, id: string, named: boolean = false, noload: boolean = false) {
         // Find list
         const [d, k] = JSONED.findData(target, PROJECT.aid);
         const v = get(d, k);
         const x = type == "object" ? {} : type == "list" ? [] : "";
+        const truncated = !!target.parentElement.querySelector(":scope > .jtrunc");
 
         // Generate list key
-        let key: string = String(target.parentElement.querySelectorAll(":scope > [jtype]").length);
+        let key: string = String(!named && Array.isArray(v) ? v.length : target.parentElement.querySelectorAll(":scope > [jtype]").length);
         if (named) {
             // Named lists use strings rather than numbers
             const illegal = new Set(JSON.parse(target.parentElement.getAttribute("i")));
@@ -184,12 +196,18 @@ export const JSONED = {
         if (!noload) load(PROJECT.aid, v, key, target.parentElement.querySelector(`:scope > [jid="${key}"]`)); // Loads only what is necessary
         updatePanels();
         update();
+
+        if (truncated) {
+            setShown(v, Infinity);
+            JSONED.refresh();
+        }
     },
     delListItem(target: HTMLElement, id: string, named: boolean = false) {
         const [list, ji] = JSONED.findData(target, PROJECT.aid);
 
         // Remove target element
         const parent = target.parentElement;
+        const truncated = !!parent.querySelector(":scope > .jtrunc");
         target.remove();
 
         if (named) {
@@ -209,9 +227,23 @@ export const JSONED = {
         }
 
         update();
+        if (truncated) JSONED.refresh();
     },
     moveListItem(target: HTMLElement, id: string, up: boolean = false, named: boolean = false) {
         const [list, ji] = JSONED.findData(target, PROJECT.aid);
+
+        if (!up && target.nextElementSibling?.classList.contains("jtrunc")) {
+            if (named) {
+                if (list instanceof OMap) list.shift(target.getAttribute("jid"), 1, true);
+            } else {
+                const i = parseInt(ji);
+                if (i < list.length-1) [list[i], list[i+1]] = [list[i+1], list[i]];
+            }
+            setShown(list, Infinity);
+            update();
+            JSONED.refresh();
+            return;
+        }
 
         if (named) {
             // This is all pointless if this is not an OMap.
@@ -265,6 +297,7 @@ export const JSONED = {
     },
     cloneListItem(target: HTMLElement, id: string, named: boolean = false) {
         const [list, ji] = JSONED.findData(target, PROJECT.aid);
+        const truncated = !!target.parentElement.querySelector(":scope > .jtrunc");
         let key;
         let elem;
 
@@ -312,6 +345,7 @@ export const JSONED = {
         // These... shouldn't be necessary, but they are for some reason
         load(id, list, key, elem);
         updatePanels();
+        if (truncated) JSONED.refresh();
     },
     clearListItems(target: HTMLElement, id: string, named: boolean = false) {
         const [d, k] = JSONED.findData(target, PROJECT.aid);
@@ -319,6 +353,12 @@ export const JSONED = {
         // Remove all data
         if (named) {
             const v = get(d, k);
+
+            if (target.querySelector(":scope > .jtrunc")) {
+                setShown(v, Infinity);
+                JSONED.refresh();
+                return;
+            }
 
             // Named lists... require deleting specific keys one at a time.
             for (const item of target.querySelectorAll(":scope > [jtype]").values()) {
@@ -332,6 +372,7 @@ export const JSONED = {
             // Normal lists are easy
             set(d, k, []);
             update();
+            if (target.querySelector(":scope > .jtrunc")) JSONED.refresh();
 
             // Remove all html
             for (const item of target.querySelectorAll(":scope > [jtype]").values()) {

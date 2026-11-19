@@ -483,6 +483,15 @@ html[theme=dark] {
     flex-direction: column;
 }
 
+.jtrunc {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin: 4px 0;
+    opacity: 0.85;
+}
+
 .jhelper-tabs {
     display: flex;
     flex-wrap: wrap;

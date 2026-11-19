@@ -3,6 +3,7 @@ import { regescape, resolve } from "./build";
 import { ISchema } from "./editor";
 import { JSONED, traceItem } from "./global";
 import { get, set, OMap, del, keys, has } from "./wrapper";
+import { truncNotice, visibleCount } from "./truncate";
 
 let measureCtx: CanvasRenderingContext2D | null = null;
 const labelWidths = new Map<string, number>();
@@ -410,28 +411,31 @@ function loadInner(id: string, p: any, k: string | number, elem: HTMLElement, sc
                     const nlist = elem.lastElementChild.lastElementChild.lastElementChild;
 
                     // Count number of items in html and correct that number
+                    nlist.querySelector(":scope > .jtrunc")?.remove();
                     const items = nlist.children;
                     const icount = nlist.childElementCount - 1;
+                    const vis = visibleCount(v, leftover.map(lk => get(v, lk)));
+                    const want = vis ? vis.count : leftover.length;
 
-
-                    if (leftover.length < icount) {
+                    if (want < icount) {
                         // Too many items so we need to remove some
-                        for (let i = icount-1; i > leftover.length-1; i--) {
+                        for (let i = icount-1; i > want-1; i--) {
                             items[i].remove();
                         }
-                    } else if (leftover.length > icount) {
+                    } else if (want > icount) {
                         // Too few items so we need to add some
                         const last = items[icount];
                         const html = JSONED.htmls[last.getAttribute("key")];
                         const htmls = [];
-                        for (let i = icount; i < leftover.length; i++) {
+                        for (let i = icount; i < want; i++) {
                             htmls.push(`<div class="panel" named jtype="${escape(val.type)}" jid="${escape(leftover[i])}">${html}</div>`);
                         }
                         last.insertAdjacentHTML("beforebegin", htmls.join(""));
                     }
 
                     // Then load each field into html
-                    for (let i = 0; i < leftover.length; i++) load(id, v, leftover[i], items[i] as HTMLElement, val);
+                    for (let i = 0; i < want; i++) load(id, v, leftover[i], items[i] as HTMLElement, val);
+                    if (vis) nlist.lastElementChild.insertAdjacentHTML("beforebegin", truncNotice(vis.count, leftover.length, vis.next));
                 } else {
                     for (const k of leftover) del(v, k, true);
                 }
@@ -478,17 +482,20 @@ function loadInner(id: string, p: any, k: string | number, elem: HTMLElement, sc
 
                     // Add or remove items from the list to balance it's size
                     const items = elem.querySelectorAll(":scope > div > [jtype]");
-                    if (v.length < items.length) {
+                    elem.querySelector(":scope > div > .jtrunc")?.remove();
+                    const vis = visibleCount(v, v);
+                    const want = vis ? vis.count : v.length;
+                    if (want < items.length) {
                         // We need to remove some items to match the length
-                        for (let i = items.length-1; i > v.length-1; i--) {
+                        for (let i = items.length-1; i > want-1; i--) {
                             items[i].remove();
                         }
-                    } else if (v.length > items.length) {
+                    } else if (want > items.length) {
                         // We need to add some items to match the length
                         const last = elem.lastElementChild.lastElementChild;
                         const html = JSONED.htmls[last.getAttribute("key")];
                         const htmls = [];
-                        for (let i = items.length; i < v.length; i++) {
+                        for (let i = items.length; i < want; i++) {
                             htmls.push(`<div class="panel" jtype="${escape(val.type)}" jid=${i}>${html}</div>`);
                         }
                         last.insertAdjacentHTML("beforebegin", htmls.join(""));
@@ -498,6 +505,7 @@ function loadInner(id: string, p: any, k: string | number, elem: HTMLElement, sc
                     elem.querySelectorAll(":scope > div > [jtype]").forEach((e, i) => {
                         load(id, v, i, e as HTMLElement, val);
                     });
+                    if (vis) elem.lastElementChild.lastElementChild.insertAdjacentHTML("beforebegin", truncNotice(vis.count, v.length, vis.next));
                 } else {
                     // Unload the object if it is loaded
                     if (v) del(p, k);
