@@ -13,7 +13,6 @@ export type SpriteSheet = {
 export type HelperSpec = {
     kind: "list" | "sprites";
     key: string;
-    multi: string;
     title: string;
     list: string[];
     id: string;

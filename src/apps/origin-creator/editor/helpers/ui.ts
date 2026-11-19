@@ -1,4 +1,3 @@
-import { oc } from "../api";
 import { getHelper, helperSections } from "./registry";
 import { spritePicker } from "./sprites";
 
@@ -78,7 +77,7 @@ function applyValue(button: HTMLElement, value: string): boolean {
     return !!field && applyToField(field, value);
 }
 
-type MultiKind = "list" | "entries" | "wrap" | "ingredient" | null;
+type MultiKind = "list" | "entries" | "wrap" | null;
 
 type WrapInfo = { ops: string[]; key: string };
 
@@ -131,32 +130,7 @@ function multiKind(button: HTMLElement): MultiKind {
 
     const entry = entryOf(field);
     if (entry) return cloneButton(entry) ? "entries" : null;
-    if (getHelper(button.getAttribute("data-helper") || "")?.multi == "ingredient" && ingredientField(field)) return "ingredient";
     return wrapInfo(field) ? "wrap" : null;
-}
-
-function ingredientField(field: Element): HTMLElement | null {
-    const owner = ownerOf(field);
-    if (!owner || owner.getAttribute("jtype") != "object") return null;
-    const up = owner.parentElement?.closest("[jtype]") as HTMLElement | null;
-    if (!up || up.getAttribute("jtype") != "or" || /^\d+$/.test(up.getAttribute("jid") ?? "")) return null;
-    return up;
-}
-
-function tagFolder(): string {
-    for (const f of ["tags/item/", "tags/items/"]) if (oc.exists(f)) return f;
-    return Number(oc.read("meta")?.pack_format) >= 48 ? "tags/item/" : "tags/items/";
-}
-
-function newTag(values: string[]): string | null {
-    const pack = oc.id;
-    if (!pack) return null;
-    const folder = tagFolder();
-    let name = "selected_items";
-    for (let n = 2; [name, "0:" + name, pack + ":" + name].some(f => oc.exists(folder + f)); n++) name = "selected_items_" + n;
-    oc.write(folder + name, { values });
-    oc.print(`Created tag ${pack}:${name} with ${values.length} items`);
-    return `${pack}:${name}`;
 }
 
 function indexPath(from: Element, to: Element): number[] {
@@ -178,15 +152,6 @@ function applyMany(button: HTMLElement, values: string[], wrapper?: string): boo
     const kind = multiKind(button);
     if (!field || !kind || values.length == 0) return false;
     if (kind == "list") return addToList(field, values);
-    if (kind == "ingredient") {
-        if (values.length == 1) return applyToField(field, values[0]);
-        const target = ingredientField(field);
-        if (wrapper == "tag") {
-            const id = newTag(values);
-            return !!id && (window as any).JSONED.setFieldValue(target, { tag: id });
-        }
-        return (window as any).JSONED.setFieldValue(target, values.map(item => ({ item })));
-    }
     if (kind == "wrap") {
         if (values.length == 1) return applyToField(field, values[0]);
         const info = wrapInfo(field);
@@ -266,7 +231,6 @@ function open(button: HTMLElement) {
     toggle.textContent = "+";
     toggle.title = kind == "list" ? "Pick several values and add them all at once"
         : kind == "wrap" ? "Pick several values and combine them with and / or"
-        : kind == "ingredient" ? "Pick several items and put them in a list or a tag"
         : "Pick several values and create one entry for each";
     const clear = document.createElement("button");
     clear.type = "button";
@@ -278,17 +242,15 @@ function open(button: HTMLElement) {
     const info = kind == "wrap" ? wrapInfo(button.closest(".field")) : null;
     const op = document.createElement("select");
     op.className = "jhelper-op";
-    const choices: [string, string][] = kind == "ingredient" ? [["list", "List"], ["tag", "Tag"]]
-        : (info?.ops ?? []).map(id => [id, id.endsWith(":or") ? "Or" : "And"]);
-    for (const [value, label] of choices) {
+    for (const id of info?.ops ?? []) {
         const o = document.createElement("option");
-        o.value = value;
-        o.textContent = label;
+        o.value = id;
+        o.textContent = id.endsWith(":or") ? "Or" : "And";
         op.appendChild(o);
     }
-    if (choices.some(c => c[0] == lastOp)) op.value = lastOp;
+    if (info?.ops.includes(lastOp)) op.value = lastOp;
     op.addEventListener("change", () => { lastOp = op.value; });
-    if (choices.length > 1) right.append(op);
+    if (info && info.ops.length > 1) right.append(op);
     if (kind) right.append(clear, apply, toggle);
     right.append(x);
     head.append(title, right);
