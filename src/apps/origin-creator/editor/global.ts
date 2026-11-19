@@ -545,6 +545,13 @@ export const JSONED = {
             }
         }
     },
+    setFieldValue(field: HTMLElement, value: any): boolean {
+        const [d, k] = JSONED.findData(field, PROJECT.aid);
+        set(d, k, value);
+        update();
+        JSONED.refresh();
+        return true;
+    },
     wrapValues(field: HTMLElement, values: string[], wrapper: string, listKey: string): boolean {
         const prop = field.getAttribute("jid");
         let owner = field.parentElement?.closest("[jtype]") as HTMLElement | null;

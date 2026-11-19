@@ -18,6 +18,7 @@ export function helperButton(schema: any, fileId: string): string {
     const spec: HelperSpec = {
         kind: sprites ? "sprites" : "list",
         key: String(h.key ?? ""),
+        multi: String(h.multi ?? ""),
         title: String(h.title ?? "Helper"),
         list: arr(h.list),
         id: String(h.id ?? fileId.split("-")[0]),
