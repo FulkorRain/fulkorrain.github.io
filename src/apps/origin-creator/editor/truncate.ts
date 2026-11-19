@@ -1,7 +1,7 @@
 import { get, keys } from "./wrapper";
 
-const CUT = 1000;
-const STEP = 500;
+const CUT = 600;
+const STEP = 300;
 
 let shown = new WeakMap<object, number>();
 
@@ -42,6 +42,6 @@ export function visibleCount(owner: object, values: any[]): { count: number, nex
 
 export function truncNotice(count: number, total: number, next: number): string {
     return `<div class="jtrunc" data-next="${next}"><span>Showing ${count} of ${total} entries</span>`
-        + `<button type="button" onclick="JSONED.showMore(this)">Show next ${STEP} lines</button>`
-        + `<button type="button" onclick="JSONED.showAll(this)">Show all</button></div>`;
+        + `<button type="button" class="normal" onclick="JSONED.showMore(this)">Show next ${STEP} lines</button>`
+        + `<button type="button" class="normal" onclick="JSONED.showAll(this)">Show all</button></div>`;
 }
