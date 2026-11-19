@@ -8,7 +8,6 @@ const HELPERS: [string, string][] = [
     ["effects", "Status effects"],
     ["damage_types", "Damage types"],
     ["damage_tags", "Damage tags"],
-    ["items", "Items"],
 ];
 
 function make<K extends keyof HTMLElementTagNameMap>(tag: K, cls = "", text = ""): HTMLElementTagNameMap[K] {
