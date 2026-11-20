@@ -4,8 +4,14 @@ export const MACROS: MacroDef[] = [
     {
         id: "selectall",
         label: "Select all on click",
-        desc: "While on, clicking a text field selects all of it",
-        fallback: 1,
+        desc: "While on, clicking a text field selects all of it. In a list, only the line you clicked.",
+        fallback: 0,
+    },
+    {
+        id: "nextfield",
+        label: "Enter goes to next field",
+        desc: "While on, pressing Enter in a text field jumps to the next text field below it.",
+        fallback: 0,
     },
 ];
 

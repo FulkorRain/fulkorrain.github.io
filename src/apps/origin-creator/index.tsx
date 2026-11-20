@@ -97,6 +97,29 @@ render(
                 fname
             );
         }}><Icon type="download"/></button>
+        <span id="tagconv" hidden>
+            <select id="tagconv-required" title="Whether converted values are required.">
+                <option value="false">Not required</option>
+                <option value="true">Required</option>
+            </select>
+            <button className="normal" title="Convert every plain value in this tag into an object with an id and a required flag." onClick={() => {
+                const data = PROJECT.parent[PROJECT.active];
+                const values = data ? get(data, "values") : null;
+                if (!Array.isArray(values)) return PROJECT.showSnack("This tag has no list of values to convert.");
+                const required = ($("#tagconv-required") as HTMLSelectElement).value == "true";
+                let count = 0;
+                const out = values.map((v) => {
+                    if (typeof v != "string") return v;
+                    count++;
+                    return { id: v, required };
+                });
+                if (!count) return PROJECT.showSnack("There are no plain values to convert.");
+                set(data, "values", out);
+                update();
+                JSONED.refresh();
+                PROJECT.showSnack(`Converted ${count} value${count == 1 ? "" : "s"} (required: ${required}).`);
+            }}>Convert to objects</button>
+        </span>
     </>),
     rawdiv.previousElementSibling
 );
@@ -397,6 +420,7 @@ export function loadEditor(type: string, heading: string | null) {
 
         // Show raw editor
         $("#raw-btns").removeAttribute("hidden");
+        $("#tagconv").toggleAttribute("hidden", type != "tags");
         rawdiv.removeAttribute("hidden");
 
         // Show editor
