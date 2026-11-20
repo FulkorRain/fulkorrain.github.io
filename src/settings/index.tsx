@@ -74,7 +74,7 @@ row("Default pack version", "The pack format New Datapack and Reset Pack start w
 
 heading("Macros");
 
-root.appendChild(make("p", "sintro", "Press Ctrl + the chosen number inside the Origin Creator to toggle a macro. Pick Disabled to turn one off."));
+root.appendChild(make("p", "sintro", "Set a Keybind for micros or disable them."));
 
 const macroSelects = new Map<string, HTMLSelectElement>();
 const macroMessage = make("div", "smessage");
