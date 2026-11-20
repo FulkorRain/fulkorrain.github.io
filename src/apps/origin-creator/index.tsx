@@ -10,6 +10,7 @@ import { Sidebar } from "./component/sidebar";
 import { Editor } from "./editor/editor";
 import { Ace } from "./component/ace";
 import { PROJECT, Projects, refreshTree, save, setProjectSettings, updateName, updatePRaw, updateUsedSize } from "./projects";
+import "./macros";
 
 import { load as loadYaml, JSON_SCHEMA} from 'js-yaml';
 import { copyNode, cutNode, cloneNode, deleteNode, pasteNode } from "./component/jstree";

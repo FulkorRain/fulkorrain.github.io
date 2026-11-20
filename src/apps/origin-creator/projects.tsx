@@ -9,6 +9,7 @@ import { get, keys, values } from "./editor/wrapper";
 import { savecount } from "./params";
 import { JSONED } from "./editor/global";
 import { UNDO_TREE_LENGTH, autorun, fixBarry, queueSave } from ".";
+import { defaultPackFormat } from "../../pack-versions";
 
 const numsaves = globalThis.offline ? 20 : savecount;
 
@@ -189,7 +190,7 @@ async function loadProject(key: string) {
         // PROJECT.project = key ?? "";
         // save();
         // localStorage.removeItem("oc-" + key);
-        PROJECT.showSnack("Failed to load project data; too old. Ask mathgeniuszach for help in the Discord.");
+        PROJECT.showSnack("Failed to load project data; too old. Ask Fulkor for help in the Discord.");
     } else {
         const data = localStorage.getItem("ocsd-" + key);
         if (!data) {
@@ -197,7 +198,7 @@ async function loadProject(key: string) {
                 meta: {
                     name: "Pack " + (parseInt(key) + 1),
                     id: "my_pack",
-                    pack_format: 6
+                    pack_format: defaultPackFormat(6)
                 }
             };
         } else {

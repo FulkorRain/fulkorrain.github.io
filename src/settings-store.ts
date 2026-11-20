@@ -4,6 +4,8 @@ export type CustomSection = { label: string; items: string[] };
 
 export type Settings = {
     accent?: string;
+    defaultFormat?: number;
+    macros?: Record<string, number>;
     helpers?: Record<string, CustomSection[]>;
 };
 
@@ -27,6 +29,9 @@ export function customSections(key: string): CustomSection[] {
     if (!Array.isArray(list)) return [];
     return list.filter(s => s && typeof s.label == "string" && Array.isArray(s.items) && s.items.length);
 }
+
+import { isPackFormat } from "./pack-versions";
+import { MACROS } from "./macros";
 
 export const SETTINGS_FORMAT = "origin-creator-settings";
 export const SETTINGS_VERSION = 1;
@@ -56,6 +61,15 @@ export function parseSettings(text: string): { settings: Settings; skipped: numb
 
     if (data.accent == "blue" || data.accent == "purple") settings.accent = data.accent;
 
+    if (isPackFormat(data.defaultFormat)) settings.defaultFormat = data.defaultFormat;
+
+    if (data.macros && typeof data.macros == "object" && !Array.isArray(data.macros)) {
+        for (const [id, n] of Object.entries<any>(data.macros)) {
+            if (MACROS.some(m => m.id == id) && Number.isInteger(n) && n >= 0 && n <= 9) (settings.macros ??= {})[id] = n;
+            else skipped++;
+        }
+    }
+
     if (data.helpers && typeof data.helpers == "object" && !Array.isArray(data.helpers)) {
         for (const [key, list] of Object.entries<any>(data.helpers)) {
             if (!Array.isArray(list)) { skipped++; continue; }
@@ -80,6 +94,8 @@ export function parseSettings(text: string): { settings: Settings; skipped: numb
 export function mergeSettings(base: Settings, incoming: Settings): Settings {
     const out: Settings = { ...base, helpers: { ...(base.helpers ?? {}) } };
     if (incoming.accent) out.accent = incoming.accent;
+    if (incoming.defaultFormat) out.defaultFormat = incoming.defaultFormat;
+    if (incoming.macros) out.macros = { ...(base.macros ?? {}), ...incoming.macros };
 
     for (const [key, list] of Object.entries(incoming.helpers ?? {})) {
         const merged = [...(out.helpers[key] ?? [])];

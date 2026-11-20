@@ -1,3 +1,5 @@
+import { PACK_VERSIONS, FALLBACK_FORMAT, isPackFormat } from "../pack-versions";
+import { MACROS, macroNumber } from "../macros";
 import { loadSettings, saveSettings, exportSettings, parseSettings, mergeSettings, ID_PATTERN, CustomSection, Settings } from "../settings-store";
 
 let settings: Settings = loadSettings();
@@ -56,6 +58,52 @@ const accentSelect = dropdown([["purple", "Purple"], ["blue", "Blue (classic)"]]
 });
 
 row("Site colours", "Switch site theme between the purple theme and blue.", accentSelect);
+
+heading("New datapack");
+
+const formatSelect = dropdown(
+    PACK_VERSIONS.map(([v, name]) => [String(v), `${v} (${name})`] as [string, string]),
+    String(isPackFormat(settings.defaultFormat) ? settings.defaultFormat : FALLBACK_FORMAT),
+    (v) => {
+        settings.defaultFormat = Number(v);
+        saveSettings(settings);
+    }
+);
+
+row("Default pack version", "The pack format New Datapack and Reset Pack start with.", formatSelect);
+
+heading("Macros");
+
+root.appendChild(make("p", "sintro", "Press Ctrl + the chosen number inside the Origin Creator to toggle a macro. Pick Disabled to turn one off."));
+
+const macroSelects = new Map<string, HTMLSelectElement>();
+const macroMessage = make("div", "smessage");
+
+for (const macro of MACROS) {
+    const options: [string, string][] = [["0", "Disabled"]];
+    for (let n = 1; n <= 9; n++) options.push([String(n), `Ctrl + ${n}`]);
+
+    const select = dropdown(options, String(macroNumber(settings.macros, macro.id)), (v) => {
+        const n = Number(v);
+        const macros = (settings.macros ??= {});
+        macros[macro.id] = n;
+        macroMessage.textContent = "";
+        if (n) {
+            for (const other of MACROS) {
+                if (other.id != macro.id && macroNumber(macros, other.id) == n) {
+                    macros[other.id] = 0;
+                    macroSelects.get(other.id).value = "0";
+                    macroMessage.textContent = `Ctrl + ${n} was used by "${other.label}", which is now disabled.`;
+                }
+            }
+        }
+        saveSettings(settings);
+    });
+    macroSelects.set(macro.id, select);
+    row(macro.label, macro.desc, select);
+}
+
+root.appendChild(macroMessage);
 
 heading("Custom helper menus");
 
@@ -249,6 +297,8 @@ fileInput.onchange = async () => {
     settings = replace ? result.settings : mergeSettings(settings, result.settings);
     saveSettings(settings);
     accentSelect.value = settings.accent == "blue" ? "blue" : "purple";
+    formatSelect.value = String(isPackFormat(settings.defaultFormat) ? settings.defaultFormat : FALLBACK_FORMAT);
+    for (const macro of MACROS) macroSelects.get(macro.id).value = String(macroNumber(settings.macros, macro.id));
     applyAccent(settings.accent);
     reset();
     renderList();

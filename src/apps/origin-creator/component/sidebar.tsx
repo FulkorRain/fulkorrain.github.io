@@ -4,7 +4,8 @@ import React from "react";
 import { Alert, AlertTitle } from "@material-ui/lab";
 import { Dialog, DialogActions, DialogTitle, DialogContent, Button, Radio, RadioGroup, FormControl, FormLabel, FormControlLabel, Box, TextField, Select, InputLabel, MenuItem, Snackbar, Checkbox, FormGroup, Grid } from "@material-ui/core";
 
-import { $, DEFAULT_FORMAT, Icon, viewSection, fixBarry } from "..";
+import { $, Icon, viewSection, fixBarry } from "..";
+import { PACK_VERSIONS, defaultPackFormat } from "../../../pack-versions";
 import { PROJECT, save, updateName } from "../projects";
 import { refresh, makeTree, newFolder } from "./jstree";
 import { archive } from "../editor/export";
@@ -480,7 +481,7 @@ function ResetButton(props) {
     const [type, setType] = React.useState("vanilla");
     const typeChange = (e) => setType(e.target.value);
 
-    const [ver, setVer] = React.useState(DEFAULT_FORMAT);
+    const [ver, setVer] = React.useState(defaultPackFormat());
     const verChange = (e) => setVer(e.target.value);
 
     const [assetz, setAssetz] = React.useState(true);
@@ -498,16 +499,7 @@ function ResetButton(props) {
                     <FormControl>
                         <InputLabel>Pack Version</InputLabel>
                         <Select value={ver} onChange={verChange}>
-                            <MenuItem value={6}>1.16.x</MenuItem>
-                            <MenuItem value={7}>1.17.x</MenuItem>
-                            <MenuItem value={8}>1.18.0-1</MenuItem>
-                            <MenuItem value={9}>1.18.2+</MenuItem>
-                            <MenuItem value={10}>1.19.0-3</MenuItem>
-                            <MenuItem value={12}>1.19.4</MenuItem>
-                            <MenuItem value={15}>1.20.0-1</MenuItem>
-                            <MenuItem value={18}>1.20.2</MenuItem>
-                            <MenuItem value={26}>1.20.3-4</MenuItem>
-                            <MenuItem value={48}>1.21-1.21.1</MenuItem>
+                            {PACK_VERSIONS.map(([v, name]) => <MenuItem key={v} value={v}>{name}</MenuItem>)}
                         </Select>
                     </FormControl>
                 </Box>
