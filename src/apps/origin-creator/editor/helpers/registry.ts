@@ -28,7 +28,7 @@ export function helperButton(schema: any, fileId: string): string {
         fields: { sprite: String(h.sprite ?? "sprite_location"), bar: String(h.bar ?? "bar_index"), icon: String(h.icon ?? "icon_index") },
         sheets: sprites && Array.isArray(h.sheets) ? h.sheets.map(sheetOf) : [],
     };
-    if (sprites ? spec.sheets.length == 0 : spec.list.length == 0 && spec.folder.length == 0) return "";
+    if (sprites ? spec.sheets.length == 0 : spec.list.length == 0 && spec.folder.length == 0 && !spec.key) return "";
 
     const key = JSON.stringify(spec);
     let i = specs.findIndex(s => JSON.stringify(s) == key);

@@ -58,8 +58,21 @@ function place(list: HTMLElement, input: HTMLElement) {
     panel.style.top = (flip ? r.bottom - panel.offsetHeight : r.top) + "px";
 }
 
+function nsEnd(text: string): number {
+    const i = text.indexOf(":");
+    return i > 0 && /^[a-z0-9_.-]+$/.test(text.slice(0, i)) ? i + 1 : 0;
+}
+
+function find(text: string, token: string): number {
+    if (!token) return -1;
+    const lower = text.toLowerCase();
+    const from = token.includes(":") ? 0 : nsEnd(text);
+    const i = lower.indexOf(token, from);
+    return i;
+}
+
 function highlight(node: HTMLElement, text: string, token: string) {
-    const i = token ? text.toLowerCase().indexOf(token) : -1;
+    const i = find(text, token);
     if (i < 0) { node.textContent = text; return; }
     const b = document.createElement("b");
     b.textContent = text.substring(i, i + token.length);
@@ -103,8 +116,7 @@ function open(select: HTMLSelectElement, seed: string = "") {
 
         let group: string | null | undefined = undefined;
         for (const entry of all) {
-            const hay = entry.text.toLowerCase();
-            if (!tokens.every(t => hay.includes(t))) continue;
+            if (!tokens.every(t => find(entry.text, t) >= 0)) continue;
 
             if (entry.group !== group) {
                 group = entry.group;

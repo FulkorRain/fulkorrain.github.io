@@ -35,6 +35,7 @@ import { MACROS } from "./macros";
 
 export const SETTINGS_FORMAT = "origin-creator-settings";
 export const SETTINGS_VERSION = 1;
+export const FREE_TEXT_HELPERS = new Set(["commands"]);
 export const ID_PATTERN = /^[a-z0-9_.-]+:[a-z0-9_.\-\/]+$/;
 
 export function exportSettings(settings: Settings): string {
@@ -78,8 +79,9 @@ export function parseSettings(text: string): { settings: Settings; skipped: numb
                 if (!s || typeof s.label != "string" || !s.label.trim() || !Array.isArray(s.items)) { skipped++; continue; }
                 const items: string[] = [];
                 for (const raw of s.items) {
-                    const id = typeof raw == "string" ? raw.trim().toLowerCase() : "";
-                    if (!ID_PATTERN.test(id)) skipped++;
+                    const free = FREE_TEXT_HELPERS.has(key);
+                    const id = typeof raw == "string" ? (free ? raw.trim() : raw.trim().toLowerCase()) : "";
+                    if (free ? !id || id.includes("\n") : !ID_PATTERN.test(id)) skipped++;
                     else if (!items.includes(id)) items.push(id);
                 }
                 if (items.length) sections.push({ label: s.label.trim().slice(0, 60), items });

@@ -385,7 +385,7 @@ function open(button: HTMLElement) {
         if (shown === 0) {
             const none = document.createElement("div");
             none.className = "jhelper-none";
-            none.textContent = "No matches";
+            none.textContent = all.length ? "No matches" : "Nothing here yet. Add your own in Settings.";
             list.appendChild(none);
         }
     };

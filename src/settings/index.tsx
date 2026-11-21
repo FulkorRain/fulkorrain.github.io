@@ -1,6 +1,6 @@
 import { PACK_VERSIONS, FALLBACK_FORMAT, isPackFormat } from "../pack-versions";
 import { MACROS, macroNumber } from "../macros";
-import { loadSettings, saveSettings, exportSettings, parseSettings, mergeSettings, ID_PATTERN, CustomSection, Settings } from "../settings-store";
+import { loadSettings, saveSettings, exportSettings, parseSettings, mergeSettings, ID_PATTERN, FREE_TEXT_HELPERS, CustomSection, Settings } from "../settings-store";
 
 let settings: Settings = loadSettings();
 const root = document.getElementById("settings");
@@ -11,6 +11,7 @@ const HELPERS: [string, string][] = [
     ["damage_types", "Damage types"],
     ["damage_tags", "Damage tags"],
     ["items", "Items"],
+    ["commands", "Commands"],
 ];
 
 function make<K extends keyof HTMLElementTagNameMap>(tag: K, cls = "", text = ""): HTMLElementTagNameMap[K] {
@@ -111,14 +112,16 @@ const intro = make("p", "sintro", "Add items to the Helper Menus in Origin Creat
 root.appendChild(intro);
 
 const form = make("div", "setting col");
-const helperSelect = dropdown(HELPERS, HELPERS[0][0], () => {});
+const helperSelect = dropdown(HELPERS, HELPERS[0][0], () => fitForm());
 const labelInput = make("input", "sinput");
 labelInput.type = "text";
 labelInput.placeholder = "Group Name";
 labelInput.maxLength = 60;
 const itemsArea = make("textarea", "sinput");
 itemsArea.rows = 6;
-itemsArea.placeholder = "modid:item\nmodid:block";
+const ITEM_HINT = "modid:item\nmodid:block";
+const COMMAND_HINT = "scoreboard players add @s points 1\ntitle @s actionbar \"Hello\"";
+itemsArea.placeholder = ITEM_HINT;
 itemsArea.spellcheck = false;
 const buttons = make("div", "sbuttons");
 const saveBtn = make("button", "sbtn", "Add section");
@@ -144,6 +147,7 @@ function reset() {
     saveBtn.textContent = "Add section";
     cancelBtn.hidden = true;
     form.firstElementChild.textContent = "New section";
+    fitForm();
 }
 
 function sections(key: string): CustomSection[] {
@@ -163,7 +167,7 @@ function renderList() {
         for (const section of list) {
             const el = make("div", "setting");
             const info = make("div", "info");
-            info.append(make("b", "", section.label), make("small", "", `${section.items.length} items`));
+            info.append(make("b", "", section.label), make("small", "", `${section.items.length} ${FREE_TEXT_HELPERS.has(key) ? "commands" : "items"}`));
 
             const actions = make("div", "sbuttons");
             const edit = make("button", "sbtn", "Edit");
@@ -177,6 +181,7 @@ function renderList() {
                 saveBtn.textContent = "Save changes";
                 cancelBtn.hidden = false;
                 form.firstElementChild.textContent = "Editing section";
+                fitForm();
                 message.textContent = "";
                 form.scrollIntoView({ block: "nearest" });
             };
@@ -200,22 +205,28 @@ function renderList() {
     if (!any) listBox.appendChild(make("p", "sintro", "Nothing here yet."));
 }
 
+function fitForm() {
+    const free = FREE_TEXT_HELPERS.has(editing ? editing.key : helperSelect.value);
+    itemsArea.placeholder = free ? COMMAND_HINT : ITEM_HINT;
+}
+
 saveBtn.onclick = () => {
     const label = labelInput.value.trim();
     const items: string[] = [];
     const bad: string[] = [];
+    const key = editing ? editing.key : helperSelect.value;
+    const free = FREE_TEXT_HELPERS.has(key);
 
     for (const raw of itemsArea.value.split("\n")) {
-        const line = raw.trim().toLowerCase();
+        const line = free ? raw.trim() : raw.trim().toLowerCase();
         if (!line) continue;
-        if (!ID_PATTERN.test(line)) bad.push(raw.trim());
+        if (!free && !ID_PATTERN.test(line)) bad.push(raw.trim());
         else if (!items.includes(line)) items.push(line);
     }
 
     if (!label) { message.textContent = "Give the section a name."; return; }
-    if (!items.length) { message.textContent = "Add at least one valid ID."; return; }
+    if (!items.length) { message.textContent = free ? "Add at least one command." : "Add at least one valid ID."; return; }
 
-    const key = editing ? editing.key : helperSelect.value;
     const arr = sections(key);
 
     if (editing) {
